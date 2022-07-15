@@ -226,31 +226,18 @@ class Space_marines:
         )  # border_y + 1 = 41 (41,77,113,149,185,221)
         self.atk_package = None
 
-    # TODO card_dict = {17: (8, 'attack_card'), 16: (3, 'attack_card'), 15: (13, 'attack_card')}
-    # combat_teams = [{'sm_name':'Lexicanium Calistarius',
-    #                  'team_color': 13,
-    #                  'visual': (0,0),
-    #                  'attk_range': 2,
-    #                  'facing': 'setup',
-    #                  'formation_num': 0,
-    #                  'status': 'alive',
-    #                  'support_token': 0,
-    #                  'team_id': 1,},
-
-    # dict --> dict --> list
-    # self.spawned_left_swarms = {0: {'terrain_color': None, 'g_stealers': []},
-    #                             1: {'terrain_color': None, 'g_stealers': []},
-    #                             2: {'terrain_color': None, 'g_stealers': []},
-    #                             3: {'terrain_color': None, 'g_stealers': []},
-    #                             4: {'terrain_color': None, 'g_stealers': []},
-    #                             5: {'terrain_color': None, 'g_stealers': []}}
-
+    def update(self):
+        if pyxel.btnp(pyxel.KEY_9):
+            print("space_marine.update() test")
+        
+        
     def defense(self, defending_marines):
         pass
 
-    def info_grab(self, attack_values):
+    def atk_info_sort(self, attack_values):
         pass
-        
+        if pyxel.btnp(pyxel.KEY_O):
+            print("O key recieved!")
         # self.atk_package = attack_values
         # if len(self.atk_package) == 2:
         #     print("atk_package == 2")
@@ -258,8 +245,6 @@ class Space_marines:
         #     print("atk_package == 1")
         # if len(self.atk_package) == 0:
         #     print("atk_package == 0")
-
-
 
     def attack_prep(self, attacking_marines, lgs, rgs):
         '''
@@ -279,12 +264,11 @@ class Space_marines:
             Returns list of enemies in Range
 
         '''
-        left = [
-            (k, v["g_stealers"]) for k, v in lgs.items() if len(v["g_stealers"]) != 0
-        ]
-        right = [
-            (k, v["g_stealers"]) for k, v in rgs.items() if len(v["g_stealers"]) != 0
-        ]
+        left = [(k, v["g_stealers"]) for k, v in lgs.items()
+                if len(v["g_stealers"]) != 0]
+
+        right = [(k, v["g_stealers"]) for k, v in rgs.items()
+                 if len(v["g_stealers"]) != 0]
         # left = [(0, ['claws', 'stingray'])] ## list --> tuple(int, [list])
         # right = [(3, ['tails'])]
 
@@ -302,36 +286,33 @@ class Space_marines:
             if hi_range > 6:
                 hi_range = 6
 
+            left_dict = {}
+            right_dict = {}
+
             if attacker.get("facing") == "LEFT":
                 for row in left:
-                    print(f"row = {row[0]}")
                     if row[0] + 1 in range(lo_range, hi_range + 1):
+                        left_atker = attacker.get("formation_num")
+                        if left_atker in left_dict:
+                            left_dict[left_atker].append(row)
+                        else:
+                            left_dict[left_atker] = [row]
 
-                        print(f'LEFT {row} is in range for {attacker.get("sm_name")}!')
-
-                        left_data = (attacker.get("facing"),
-                                     attacker.get("formation_num"),
-                                     lo_range,
-                                     hi_range,
-                                     row,)
-
-                        gs_in_range.append(left_data)
 
             if attacker.get("facing") == "RIGHT":
                 for row in right:
                     if 6 - row[0] + 1 in range(lo_range, hi_range + 1):
+                        right_atker = attacker.get("formation_num")
+                        if right_atker in right_dict:
+                            right_dict[right_atker].append(row)
+                        else:
+                            left_dict[right_atker] = [row]
+            if left_dict:
+                gs_in_range.append(left_dict)
+            if right_dict:
+                gs_in_range.append(right_dict)
 
-                        print(f'RIGHT {row} is in range for {attacker.get("sm_name")}!')
-
-                        right_data = (attacker.get("facing"),
-                                      attacker.get("formation_num"),
-                                      lo_range,
-                                      hi_range,
-                                      row,)
-
-                        gs_in_range.append(right_data)
-
-        print(f"gs_in_range = {gs_in_range}")
+        print(gs_in_range)
         return gs_in_range
 
         # attacking_marines = list of dicts, 1 dict for each marine
@@ -370,30 +351,30 @@ class Space_marines:
             single_y = self.arrow_y[y_val - 1]
 
             # card border
-            pyxel.rectb(
-                card_border_x,
-                card_border_y[y_val - 1],
-                card_border_w,
-                card_border_h,
-                col,
-            )
+            pyxel.rectb(card_border_x,
+                        card_border_y[y_val - 1],
+                        card_border_w,
+                        card_border_h,
+                        col,)
+            
             # portrait
-            pyxel.blt(
-                self.portrait_x + 1,
-                self.portrait_y[y_val - 1],
-                0,
-                sm_face[0],
-                sm_face[1],
-                15,
-                16,
-            )
+            pyxel.blt(self.portrait_x + 1,
+                        self.portrait_y[y_val - 1],
+                        0,
+                        sm_face[0],
+                        sm_face[1],
+                        15,
+                        16,)
+            
             # portrait border
-            pyxel.rectb(self.portrait_x, self.portrait_y[y_val - 1], 17, 17, col)
+            pyxel.rectb(self.portrait_x, self.portrait_y[y_val - 1], 17, 17, 
+                        col)
             # SM name 1
-            pyxel.text(self.name_x, self.name_y[y_val - 1], f"{sm_name[0]}", col)
+            pyxel.text(self.name_x, self.name_y[y_val - 1], f"{sm_name[0]}", 
+                       col)
             # SM name 2
-            pyxel.text(
-                self.name_x - 2, self.name_y[y_val - 1] + 6, f"{sm_name[1]}", col)
+            pyxel.text(self.name_x - 2, self.name_y[y_val - 1] + 6, 
+                       f"{sm_name[1]}", col)
 
             # facing arrows
             if marine["facing"] == "LEFT":
@@ -414,11 +395,11 @@ class Space_marines:
                             card_border_w + 1,
                             card_border_h + 1,
                             9)
-            
+
             if self.atk_package:
                 gs_left_x = 5
                 gs_right_x = 183
-                
+
                 for atk in self.atk_package:
                     if atk[0] == 'LEFT':
                         #marine
@@ -462,7 +443,7 @@ class Space_marines:
                     #     hi_range,
                     #     row,)
 
-                # [('RIGHT', 4, 2, 6, (3, ['stingray'])), 
+                # [('RIGHT', 4, 2, 6, (3, ['stingray'])),
                 # ('LEFT', 3, 1, 5, (0, ['claws', 'stingray']))]
 
 
@@ -1408,19 +1389,20 @@ class App:
             # TODO: CUE UP 1st ACTION CARD AND FLIP BETWEEN SM SELECTIONS WITH ORANGE BOX
             # add selection WASD, ENTER into each card type to control selectors
             if self.ac_count <= total_actions and pyxel.btnp(pyxel.KEY_RETURN):
+
                 cardtype = actions.get(a_list[self.ac_count])[1]
                 cardteam = actions.get(a_list[self.ac_count])[0]
-
 
                 if cardtype == "attack_card":
                     lgs = self.location_and_spawns.spawned_left_swarms
                     rgs = self.location_and_spawns.spawned_right_swarms
-                    attacking_marines = [s for s in sm if s["team_color"] == cardteam]
+                    attacking_marines = [s for s in sm if 
+                                         s["team_color"] == cardteam]
 
                     attack_values = self.space_marines.attack_prep(
                         attacking_marines, lgs, rgs)
 
-                    self.space_marines.info_grab(attack_values)
+                    self.space_marines.atk_info_sort(attack_values)
 
 
                 elif cardtype == "support_card":
@@ -1430,7 +1412,8 @@ class App:
                     if cardtype == "move_act_card":
                         # self.space_marines.move_action(move_marines) #action_marines?
                         print("action+move")
-                self.ac_count += 1
+                    self.ac_count += 1
+            self.space_marines.update()
 
     def draw(self):
         if self.window_state == 0:
