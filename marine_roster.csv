@@ -1,0 +1,10 @@
+﻿Team,Space Marines,Attack Range,Bio,Appearance ,,Action Cards,AC Name,AC Number,Effect
+Grey Librarians,Lexicanium Calistarius,2,xxx,open_helm_lib,,Attack,Psionic Attack,15,"Each time SM_1 rolls SKULL while ATTACKING, make 1 additional attack."
+Grey Librarians,Brother Scipio,2,xxx,sm_helm,,Support,Power Field,6,"After SUPPORT resolved, choose any SWARM. This SWARM cannot attack or be killed this round."
+,,,,,,Move + Activate,Stealth Tactics,8,"After MOVE +ACTIVATE resolved, you may DISCARD 1 card from either blip pile. Then you may spend 1 SUPPORT TOKEN to discard 1 card from the other blip pile."
+Green Hammers,Sargeant Gideon,0,xxx,sm_gmask_brhair,,Attack,Dead Aim,16,"each time 1 of TEAM rolls 4, KILL up to 3 Genestealers from the defending swarm."
+Green Hammers,Brother Noctis,2,xxx,sm_helm,,Support,Block,1,"Each time SM_1 rolls SKULL while DEFENDING, the attack MISSES"
+,,,,,,Move + Activate,Run and Gun,12,"After MOVE +ACTIVATE resolved, each of TEAM may spend 1 SUPPORT TOKEN to make 1 ATTACK "
+Red Assault Cannons,Brother Leon,3,xxx,sm_helm,,Attack,Full Auto,17,SM_1 may ATTACK up to 3 times (instead of once)
+Red Assault Cannons,Brother Valencio,2,xxx,sm_helm,,Support,Overwatch,4,"At end of EVENT PHASE, each TEAM may spend 1 SUPPORT TOKEN to make 1 ATTACK"
+,,,,,,Move + Activate,Onward Brothers,7,"Each time 1 of TEAM activates a DOOR, you may place 1 additional SUPPORT TOKEN on the TERRAIN CARD."
