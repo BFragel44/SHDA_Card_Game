@@ -222,8 +222,8 @@ class Space_marines:
             113,
             149,
             185,
-            221,
-        )  # border_y + 1 = 41 (41,77,113,149,185,221)
+            221,)  
+        # border_y + 1 = 41 (41,77,113,149,185,221)
         self.atk_package = None
 
     def update(self):
@@ -235,16 +235,21 @@ class Space_marines:
         pass
 
     def atk_info_sort(self, attack_values):
-        pass
-        if pyxel.btnp(pyxel.KEY_O):
-            print("O key recieved!")
+        # [{3: [(2, ['tails', 'tails'])]}, {5: [(2, ['skulls', 'tails'])]}]
+        atk_length = len(attack_values)
+        if atk_length == 2:
+            print('attack value = 2')
+            atk_form_list = attack_values.keys()
+            print(atk_form_list)
+        elif atk_length == 1:
+            print('attack value = 1')
+        else:
+            print('attack value = 0')
+        
         # self.atk_package = attack_values
-        # if len(self.atk_package) == 2:
-        #     print("atk_package == 2")
-        # if len(self.atk_package) == 1:
-        #     print("atk_package == 1")
-        # if len(self.atk_package) == 0:
-        #     print("atk_package == 0")
+        
+
+
 
     def attack_prep(self, attacking_marines, lgs, rgs):
         '''
@@ -395,6 +400,7 @@ class Space_marines:
                             card_border_w + 1,
                             card_border_h + 1,
                             9)
+
 
             if self.atk_package:
                 gs_left_x = 5
@@ -1412,8 +1418,10 @@ class App:
                     if cardtype == "move_act_card":
                         # self.space_marines.move_action(move_marines) #action_marines?
                         print("action+move")
-                    self.ac_count += 1
+            
+                self.ac_count += 1
             self.space_marines.update()
+                
 
     def draw(self):
         if self.window_state == 0:
