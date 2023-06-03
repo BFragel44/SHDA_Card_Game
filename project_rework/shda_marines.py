@@ -1,4 +1,5 @@
 import random
+import pyxel
 
 # GREY = 13
 # GREEN = 3
@@ -129,7 +130,6 @@ class Space_marines:
                 if pyxel.btnp(pyxel.KEY_F):
                     self.opponents['attacker'] = self.sm_list[self.sm_choice]
                     for facing, val_dict in self.atk_package.items():
-
 # TODO problem area #1                        
                         if self.opponents['attacker']+1 in val_dict:
                             self.direction = facing
@@ -150,19 +150,13 @@ class Space_marines:
                     #self.opponents['defender'] = self.gs_list[self.gs_choice]
                     self.sm_list = []
                     self.phase_two = False
-                    
-    # TODO
-    def defense(self, defending_marines):
-        pass
 
-    
     def atk_info_sort(self, attack_values):
         for side, pairings in attack_values.items():
             for sm, gs in pairings.items():
                 self.sm_list.append(sm-1)
         self.phase_one = True
         self.atk_package = attack_values
-    
     
     def defGs_info_sort(self):
         for k,v in self.atk_package.items():
@@ -172,15 +166,6 @@ class Space_marines:
                 #facing, vs_dict = LEFT, {3: [2], 2: [2]}
                 for gs_list in vs_list:
                     print(gs_list)
-
-
-        #         if sm_num == self.opponents['attacker']:
-        #             self.gs_list.append(gs_nums)
-        #             print("appended!")
-        #             print("appended!")
-        #             print("appended!")
-        # print(f"self.gs_list = {self.gs_list}")
-
 
     def attack_prep(self, attacking_marines, lgs, rgs):
         '''
@@ -197,7 +182,6 @@ class Space_marines:
         -------
         gs_in_range : LIST
             Returns list of enemies in Range
-
         '''
         left = [(k, v["g_stealers"]) for k, v in lgs.items()
                 if len(v["g_stealers"]) != 0]
@@ -208,7 +192,6 @@ class Space_marines:
         # right = [(3, ['tails'])]
 
         # GS formation numbers MUST BE +1 in order to line up with ATK RANGE!!!!!
-
         gs_in_range = {}
         left_dict = {}
         right_dict = {}
@@ -247,29 +230,45 @@ class Space_marines:
         if right_dict:
             gs_in_range["RIGHT"] = right_dict
 
-        return gs_in_range
-    
-        # gs_in_range = {'LEFT': {3: {'targets': [0]}, 1: {'targets': [0]}}}
+        return gs_in_range 
+# gs_in_range = {'LEFT': {3: {'targets': [0]}, 1: {'targets': [0]}}}
 
         # attacking_marines = list of dicts, 1 dict for each marine
         # GREY = 13: Each time team_id_1 rolls SKULL while ATTACKING, make 1 additional attack.
         # GREEN = 3: Each time a GREEN teammate rolls 4, kill up to THREE from defending swarm.
         # RED = 8: team_id_1 can attack up to THREE times.
-
-    def support(self, supporting_marines):
-        pass
-
-    def move_action(self, moving_marines):
-        pass
-
-    def sm_death(self, killed_marine):
-        pass
-
-    # TODO
-
-    def support_token(self):
-        pass
-
+    def _draw(self):
+        for roster_dict in self.combat_teams:
+            y_val = roster_dict["formation_num"]
+            col = roster_dict["team_color"]
+            sm_face = roster_dict["visual"]
+            sm_name = roster_dict["sm_name"].split(" ")
+            single_y = sm_visual_dimms["arrow_y"][y_val - 1]
+            # sm card border
+            pyxel.rectb(sm_visual_dimms["card_border_x"],
+                        sm_visual_dimms["card_border_y"][y_val - 1],
+                        sm_visual_dimms["card_border_w"],
+                        sm_visual_dimms["card_border_h"], col,)
+            # sm portrait
+            pyxel.blt(sm_visual_dimms["portrait_x"] + 1,
+                        sm_visual_dimms["portrait_y"][y_val - 1], 0, sm_face[0], sm_face[1], 15, 16,)
+            # sm portrait border
+            pyxel.rectb(sm_visual_dimms["portrait_x"],
+                        sm_visual_dimms["portrait_y"][y_val - 1], 17, 17, col)
+            # SM name 1
+            pyxel.text(sm_visual_dimms["name_x"],
+                       sm_visual_dimms["name_y"][y_val - 1], f"{sm_name[0]}", col)
+            # SM name 2
+            pyxel.text(sm_visual_dimms["name_x"] - 2,
+                       sm_visual_dimms["name_y"][y_val - 1] + 6, f"{sm_name[1]}", col)
+            # sm facing arrows
+            y_arrow_list = [single_y, single_y + 7, single_y + 14]
+            if roster_dict["facing"] == "LEFT":
+                for y_val in y_arrow_list:
+                    pyxel.blt(sm_visual_dimms["left_arrow_x"], y_val, 0, 0, 32, 6, 6)
+            else:
+                for y_val in y_arrow_list:
+                    pyxel.blt(sm_visual_dimms["right_arrow_x"], y_val, 0, 10, 32, 6, 6)
 
 ### atk_package() DRAW
             # if self.atk_package:
@@ -286,36 +285,32 @@ class Space_marines:
             #             card_border_h + 4,
             #             9)
                 
-                # elif self.phase_two:
-                #     print(f"gs_choice = {self.gs_choice}")
-                #     #selected marine
+            #     elif self.phase_two:
+            #         print(f"gs_choice = {self.gs_choice}")
+            #         #selected marine
                     
-                #     pyxel.rectb(
-                #         card_border_x - 2,
-                #         card_border_y[self.sm_list[self.sm_choice]] - 2,
-                #         card_border_w + 4,
-                #         card_border_h + 4,
-                #         13)
+            #         pyxel.rectb(card_border_x - 2,
+            #             card_border_y[self.sm_list[self.sm_choice]] - 2,
+            #             card_border_w + 4,
+            #             card_border_h + 4,
+            #             13)
                     
-                #     if self.direction == "LEFT":
-                #         selection = self.gs_list[self.gs_choice]
-                #         #gs
-                #         pyxel.rectb(
-                #             gs_left_x,
-                #             card_border_y[selection] - 2,
-                #             card_border_w + 4,
-                #             card_border_h + 4,
-                #             9)
+            #         if self.direction == "LEFT":
+            #             selection = self.gs_list[self.gs_choice]
+            #             #gs
+            #             pyxel.rectb(gs_left_x,
+            #                 card_border_y[selection] - 2,
+            #                 card_border_w + 4,
+            #                 card_border_h + 4,
+            #                 9)
                     
-                #     elif self.direction == 'RIGHT':
-                #         #gs
-                #         pyxel.rectb(
-                #             gs_right_x,
-                #             card_border_y[self.gs_list[self.gs_choice]] - 2,
-                #             card_border_w + 4,
-                #             card_border_h + 4,
-                #             9)
-
-                # else:
-                #     pyxel.rect(screen_x/2-25, screen_y/2-25, 50, 15, 8)
-                #     pyxel.text(screen_x/2-24, screen_y/2-25, "No Valid ATK", 7)
+            #         elif self.direction == 'RIGHT':
+            #             #gs
+            #             pyxel.rectb(gs_right_x,
+            #                 card_border_y[self.gs_list[self.gs_choice]] - 2,
+            #                 card_border_w + 4,
+            #                 card_border_h + 4,
+            #                 9)
+            #     else:
+            #         pyxel.rect(screen_x/2-25, screen_y/2-25, 50, 15, 8)
+            #         pyxel.text(screen_x/2-24, screen_y/2-25, "No Valid ATK", 7)

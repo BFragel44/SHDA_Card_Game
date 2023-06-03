@@ -1,0 +1,31 @@
+﻿Card Name,Card Effect,L Spawn,R Spawn,GS Maneuver ,GS Emblem
+Enter Formation,"Each time a player resolves a MOVE + ACTION card next round, they may first place 1 SUPPORT TOKEN on ANY SM.",yt_orange,yt_yellow,up_down_chevrons,claw_slash
+For My Battle Brothers!,INSTINCT: choose 1 SM with at least 1 TOKEN (if able). DISCARD 1 SUPPORT TOKEN from them and 1 ENGAGED GS with him (of your choice).,yt_red,wt_orange,up_down_chevrons,tail
+For My Battle Brothers!,INSTINCT: choose 1 SM with at least 1 TOKEN (if able). DISCARD 1 SUPPORT TOKEN from them and 1 ENGAGED GS with him (of your choice).,yt_red,wt_orange,up_down_chevrons,tail
+Out Of Thin Air,"INSTINCT: Choose 1 SM, SPAWN 2 GS BEHIND him.",wt_orange,wt_red,flank_arrow,claw_slash
+Out Of Thin Air,"INSTINCT: Choose 1 SM, SPAWN 2 GS BEHIND him.",wt_orange,wt_red,flank_arrow,skull
+Full Scan,"INSTINCT: Choose a blip pile, DISCARD the top card of this pile.",yt_red,yt_yellow,up_down_chevrons,stingray
+Full Scan,"INSTINCT: Choose a blip pile, DISCARD the top card of this pile.",yt_red,yt_yellow,up_down_chevrons,stingray
+Resupply,INSTINCT: Choose 1 SM. MOVE all SUPPORT TOKENS to him from ALL other SMs.,yt_red,wt_yellow,up_down_chevrons,skull
+Gun Jam,"INSTINCT: Choose 1 COMBAT TEAM that did NOT reveal an ATTACK ACTION this round. NEXT ROUND, they may NOT play an ATTACK ACTION.",yt_yellow,wt_red,up_down_chevrons,tail
+Gun Jam,"INSTINCT: Choose 1 COMBAT TEAM that did NOT reveal an ATTACK ACTION this round. NEXT ROUND, they may NOT play an ATTACK ACTION.",yt_yellow,wt_red,up_down_chevrons,tail
+Surrounded,INSTINCT: Choose 1 SM. Move ALL GS (from EVERY POSITION) to the chosen SM's position (do NOT change their sides).,wt_red,wt_orange,NONE,NONE
+Flanking Manoeuvre,Move ALL SWARMS so they are BEHIND their ENGAGED SM.,wt_red,wt_orange,NONE,NONE
+Stalking From The Shadows,INSTINCT: Choose 1 SM with at least 1 SUPPORT TOKEN. DISCARD ALL of his SUPPORT TOKENS.,yt_red,wt_green,up_down_chevrons,skull
+Stalking From The Shadows,INSTINCT: Choose 1 SM with at least 1 SUPPORT TOKEN. DISCARD ALL of his SUPPORT TOKENS.,yt_red,wt_green,up_down_chevrons,skull
+Chaos Of Battle,Change EVERY SM's FACING.,wt_red,wt_yellow,up_down_chevrons,skull
+Chaos Of Battle,Change EVERY SM's FACING.,wt_red,wt_yellow,up_down_chevrons,skull
+The Swarm,PLACE 2 GS cards into EACH BLIP PILE (from GS deck).,wt_yellow,wt_orange,flank_arrow,tail
+The Swarm,PLACE 2 GS cards into EACH BLIP PILE (from GS deck).,wt_yellow,wt_orange,flank_arrow,stingray
+Secret Route,"If there is a DOOR TERRAIN CARD in FORMATION, place 2 SUPPORT TOKENS on it.",yt_orange,yt_green,up_down_chevrons,claw_slash
+Secret Route,"If there is a DOOR TERRAIN CARD in FORMATION, place 2 SUPPORT TOKENS on it.",yt_orange,yt_green,up_down_chevrons,claw_slash
+Quick Instincts,"INSTINCT: Choose 1 SM, he may IMMEDIATELY make 1 ATTACK.",yt_red,yt_orange,up_down_chevrons,stingray
+Temporary Sanctuary,INSTINCT: Choose 1 swarm of GS. Shuffle ALL cards from the chosen SWARM into the SMALLEST blip pile.,yt_red,yt_orange,up_down_chevrons,claw_slash
+Cleansing Flames,"INSTINCT: Choose 1 SM and ROLL a die. If you roll a SKULL, SLAY 2 GS ENGAGED with him (of your choice).",yt_orange,yt_green,up_down_chevrons,stingray
+Outnumbered,DISCARD ALL SUPPORT TOKENS from EACH SM that is ENGAGED with at least 1 SWARM.,wt_orange,wt_red,flank_arrow,claw_slash
+Rewarded Faith,INSTINCT: Choose 1 SM. You may DISCARD any number of SUPPORT TOKENS from him to SLAY an EQUAL NUMBER of GS he is ENGAGED with.,yt_green,wt_red,up_down_chevrons,tail
+Evasion,"When a player resolves an ATTACK ACTION next round, he may only attack with 1 SM in that TEAM (instead of both).",wt_yellow,wt_red,flank_arrow,skull
+Psychic Assault,"INSTINCT: Choose 1 SM and ROLL a die. If you roll a 0 or 1, the SM is slain.",wt_red,wt_orange,flank_arrow,stingray
+Rescue Space Marine,INSTINCT: Choose 1 SM that belongs to a NON-ELIMINATED TEAM. Place the SM card at the BOTTOM OF THE FORMATION facing RIGHT.,yt_orange,yt_red,up_down_chevrons,claw_slash
+They're Everywhere!,Spawn 1 GS in FRONT of each SM that is not ENGAGED with a SWARM.,wt_orange,wt_red,flank_arrow,tail
+Second Wind,"INSTINCT: Choose 1 SM. EACH time he rolls a 0 while DEFENDING next round, the attack MISSES.",yt_yellow,yt_red,up_down_chevrons,stingray

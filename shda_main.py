@@ -1,13 +1,11 @@
-import pyxel
 import random
+
 # import itertools
 import pandas as pd
+import pyxel
 
-import heartrate
-heartrate.trace(browser=False)
-
-import shda_marines as marines
 import action_cards as act_cards
+import shda_marines as marines
 
 # https://morgan3d.github.io/articles/2017-05-29-space-hulk/
 
@@ -81,12 +79,6 @@ def create_location_deck():
     final_locs.insert(0, vLock)
     return final_locs
 
-
-# This is the FINAL, shuffled, location deck
-# locations_deck = create_location_deck()
-# number_of_locations = len(locations_deck)
-# print(number_of_locations)
-
 ########################################################## GENESTEALER DECK
 def gs_deck_create():
     """
@@ -104,16 +96,8 @@ def gs_deck_create():
     random.shuffle(gs_raw_deck)
     return gs_raw_deck
 
-
 gs_deck = gs_deck_create()
 
-## INITIAL GS MAIN DECK CREATION
-# def gs_deck_create():
-#     initial_deck = list(itertools.product(range(1,10),['Tail','Skull','Stingray','Claw']))
-#     random.shuffle(initial_deck)
-#     return initial_deck
-
-# gs_deck = gs_deck_create()
 ###########################################################
 class Gene_deck:
     def __init__(self, gs_deck, loc_num_left=6, loc_num_right=6):
@@ -225,35 +209,86 @@ class Space_marines:
             221,)  
         # border_y + 1 = 41 (41,77,113,149,185,221)
         self.atk_package = None
+        self.phase_one = False
+        self.phase_two = False
+        self.sm_choice = 0
+        self.sm_list = []
+        self.gs_list = []
+        self.gs_choice = 0
+        self.opponents = {}
+        self.direction = None
 
     def update(self):
-        if pyxel.btnp(pyxel.KEY_9):
-            print("space_marine.update() test")
-        
-        
+        if self.atk_package:
+            if self.phase_one:
+                if pyxel.btnp(pyxel.KEY_UP) and self.sm_choice > 0:
+                    self.sm_choice -= 1
+
+                if pyxel.btnp(pyxel.KEY_DOWN) and self.sm_choice < len(
+                        self.sm_list)-1:
+                    self.sm_choice += 1
+
+                if pyxel.btnp(pyxel.KEY_F):
+                    self.opponents['attacker'] = self.sm_list[self.sm_choice]
+                    for facing, val_dict in self.atk_package.items():
+
+# TODO problem area #1                        
+                        if self.opponents['attacker']+1 in val_dict:
+                            self.direction = facing
+
+                    self.phase_two = True
+                    self.phase_one = False
+            # self.sm_list[self.sm_choice] = LEFT
+            
+            elif self.phase_two:
+                if pyxel.btnp(pyxel.KEY_UP) and self.gs_choice > 0:
+                    self.gs_choice -= 1
+
+                if pyxel.btnp(pyxel.KEY_DOWN) and self.gs_choice < len(
+                        self.gs_list)-1:
+                    self.gs_choice += 1
+
+                if pyxel.btnp(pyxel.KEY_F):
+                    #self.opponents['defender'] = self.gs_list[self.gs_choice]
+                    self.sm_list = []
+                    self.phase_two = False
+                    
+    # TODO
     def defense(self, defending_marines):
         pass
 
+    
     def atk_info_sort(self, attack_values):
-        # [{3: [(2, ['tails', 'tails'])]}, {5: [(2, ['skulls', 'tails'])]}]
-        atk_length = len(attack_values)
-        if atk_length == 2:
-            print('attack value = 2')
-            atk_form_list = attack_values.keys()
-            print(atk_form_list)
-        elif atk_length == 1:
-            print('attack value = 1')
-        else:
-            print('attack value = 0')
-        
-        # self.atk_package = attack_values
+        for side, pairings in attack_values.items():
+            for sm, gs in pairings.items():
+                self.sm_list.append(sm-1)
+        self.phase_one = True
+        self.atk_package = attack_values
+    
+    
+    def defGs_info_sort(self):
+        for k,v in self.atk_package.items():
+            # k,v = {'LEFT': {2: [2]}}
+# TODO problem area #2
+            for facing, vs_list in v.items():
+                #facing, vs_dict = LEFT, {3: [2], 2: [2]}
+                for gs_list in vs_list:
+                    print(gs_list)
+                    
+
+
+        #         if sm_num == self.opponents['attacker']:
+        #             self.gs_list.append(gs_nums)
+        #             print("appended!")
+        #             print("appended!")
+        #             print("appended!")
+        # print(f"self.gs_list = {self.gs_list}")
         
 
 
 
     def attack_prep(self, attacking_marines, lgs, rgs):
         '''
-
         Parameters
         ----------
         attacking_marines : TYPE
@@ -279,7 +314,10 @@ class Space_marines:
 
         # GS formation numbers MUST BE +1 in order to line up with ATK RANGE!!!!!
 
-        gs_in_range = []
+        gs_in_range = {}
+        left_dict = {}
+        right_dict = {}
+
         for attacker in attacking_marines:
             lo_range = 1
             hi_range = 6
@@ -287,38 +325,36 @@ class Space_marines:
             lo_range = attacker.get("formation_num") - attacker.get("attk_range")
             if lo_range < 1:
                 lo_range = 1
+            
             hi_range = attacker.get("formation_num") + attacker.get("attk_range")
             if hi_range > 6:
                 hi_range = 6
-
-            left_dict = {}
-            right_dict = {}
 
             if attacker.get("facing") == "LEFT":
                 for row in left:
                     if row[0] + 1 in range(lo_range, hi_range + 1):
                         left_atker = attacker.get("formation_num")
                         if left_atker in left_dict:
-                            left_dict[left_atker].append(row)
+                            left_dict[left_atker].append(row[0])
                         else:
-                            left_dict[left_atker] = [row]
-
+                            left_dict[left_atker] = [row[0]]
 
             if attacker.get("facing") == "RIGHT":
                 for row in right:
                     if 6 - row[0] + 1 in range(lo_range, hi_range + 1):
                         right_atker = attacker.get("formation_num")
                         if right_atker in right_dict:
-                            right_dict[right_atker].append(row)
+                            right_dict[right_atker].append(row[0])
                         else:
-                            left_dict[right_atker] = [row]
-            if left_dict:
-                gs_in_range.append(left_dict)
-            if right_dict:
-                gs_in_range.append(right_dict)
+                            right_dict[right_atker] = [row[0]]
+        if left_dict:
+            gs_in_range["LEFT"] = left_dict
+        if right_dict:
+            gs_in_range["RIGHT"] = right_dict
 
-        print(gs_in_range)
         return gs_in_range
+    
+        # gs_in_range = {'LEFT': {3: {'targets': [0]}, 1: {'targets': [0]}}}
 
         # attacking_marines = list of dicts, 1 dict for each marine
         # GREY = 13: Each time team_id_1 rolls SKULL while ATTACKING, make 1 additional attack.
@@ -401,57 +437,54 @@ class Space_marines:
                             card_border_h + 1,
                             9)
 
-
+### atk_package() DRAW
             if self.atk_package:
                 gs_left_x = 5
                 gs_right_x = 183
-
-                for atk in self.atk_package:
-                    if atk[0] == 'LEFT':
-                        #marine
-                        pyxel.rectb(
-                            card_border_x - 2,
-                            card_border_y[atk[1]-1] - 2,
-                            card_border_w + 4,
-                            card_border_h + 4,
-                            9)
+                
+                if self.phase_one:
+                    selection = self.sm_list[self.sm_choice]
+                    #marine
+                    pyxel.rectb(
+                        card_border_x - 2,
+                        card_border_y[selection] - 2,
+                        card_border_w + 4,
+                        card_border_h + 4,
+                        9)
+                
+                # elif self.phase_two:
+                #     print(f"gs_choice = {self.gs_choice}")
+                #     #selected marine
+                    
+                #     pyxel.rectb(
+                #         card_border_x - 2,
+                #         card_border_y[self.sm_list[self.sm_choice]] - 2,
+                #         card_border_w + 4,
+                #         card_border_h + 4,
+                #         13)
+                    
+                    if self.direction == "LEFT":
+                        selection = self.gs_list[self.gs_choice]
                         #gs
                         pyxel.rectb(
                             gs_left_x,
-                            card_border_y[atk[4][0]] - 2,
+                            card_border_y[selection] - 2,
                             card_border_w + 4,
                             card_border_h + 4,
                             9)
-                    elif atk[0] == 'RIGHT':
-                        #marine
-                        pyxel.rectb(
-                            card_border_x - 2,
-                            card_border_y[atk[1]-1] - 2,
-                            card_border_w + 4,
-                            card_border_h + 4,
-                            9)
+                    
+                    elif self.direction == 'RIGHT':
                         #gs
                         pyxel.rectb(
                             gs_right_x,
-                            card_border_y[atk[4][0]] - 2,
+                            card_border_y[self.gs_list[self.gs_choice]] - 2,
                             card_border_w + 4,
                             card_border_h + 4,
                             9)
-                    else:
-                        pyxel.rect(screen_x/2-25, screen_y/2-25, 50, 15, 8)
-                        pyxel.text(screen_x/2-24, screen_y/2-25, "No Valid ATK", 7)
 
-
-                    # left_or_right_data = (
-                    #     attacker.get("facing"),
-                    #     attacker.get("formation_num"),
-                    #     lo_range,
-                    #     hi_range,
-                    #     row,)
-
-                # [('RIGHT', 4, 2, 6, (3, ['stingray'])),
-                # ('LEFT', 3, 1, 5, (0, ['claws', 'stingray']))]
-
+                else:
+                    pyxel.rect(screen_x/2-25, screen_y/2-25, 50, 15, 8)
+                    pyxel.text(screen_x/2-24, screen_y/2-25, "No Valid ATK", 7)
 
 ###############################################################################
 
@@ -726,7 +759,6 @@ class Location_and_spawns:
         sides = ["left1", "left2", "right1", "right2"]
 
         for side in sides:
-            print(f"side in sides = {swarm_spawn_sides[side]}")
             if swarm_spawn_sides[side] != None:
                 if side in ["left1", "left2"]:
                     spawn_placement["left"].append(swarm_spawn_sides[side])
@@ -753,9 +785,6 @@ class Location_and_spawns:
                             )
         for key in self.spawned_left_swarms:
             if self.spawned_left_swarms[key]["g_stealers"]:
-                print(
-                    f"the L formation number is {key} and its value is {self.spawned_left_swarms[key]['g_stealers']}"
-                )
                 # self.gs_left_formation_num = key
                 self.gs_left_formation_num.append(key)
         if spawn_placement["right"]:
@@ -776,9 +805,6 @@ class Location_and_spawns:
                             )
         for key in self.spawned_right_swarms:
             if self.spawned_right_swarms[key]["g_stealers"]:
-                print(
-                    f"the R formation number is {key} and its value is {self.spawned_right_swarms[key]['g_stealers']}"
-                )
                 # self.gs_right_formation_num = key
                 self.gs_right_formation_num.append(key)
 
@@ -1048,11 +1074,11 @@ class Action_cards:
                 self.ac_selection()
             if pyxel.btnp(pyxel.KEY_RETURN) and len(self.ac_selected_list) == 3:
                 self.confirm_choices = 1
+        
         if self.confirm_choices == 1:
             if pyxel.btnp(pyxel.KEY_F) and self.miniscreen_choice == 0:
                 self.ac_prev_turn = self.ac_selected_list
                 self.ac_prev_blocked_out = self.blocked_out_rows
-
                 self.ac_selected_list = []
                 self.confirm_choices = 2
             if pyxel.btnp(pyxel.KEY_F) and self.miniscreen_choice == 1:
@@ -1373,31 +1399,37 @@ class App:
         if self.window_state == 0:  # Main Game Window
             if pyxel.btnp(pyxel.KEY_Q):
                 pyxel.quit()
+            
             if pyxel.btnp(pyxel.KEY_Z):
                 self.location_and_spawns.location_card_draw()
                 self.drawn_event_card = self.event_cards.draw_card()
                 self.location_and_spawns.gs_spawn_locs(self.drawn_event_card)
+            
             if pyxel.btnp(pyxel.KEY_N) and self.window_state == 0:
                 self.window_state = 1  # Opens Action Card Window
+        
+        # Action Card Window
         elif self.window_state == 1:
             self.action_cards.update()
             if pyxel.btnp(pyxel.KEY_N) and self.action_cards.confirm_choices == 0:
                 self.window_state = 0
             if self.action_cards.confirm_choices == 2:
                 self.window_state = 2  # Starts Resolve Action Phase
+        
         if self.window_state == 2:
             actions = App.organize_acards(self)
             a_list = [a for a, v in actions.items()]
-            # card_dict = {17: (8, 'attack_card'), 16: (3, 'attack_card'), 15: (13, 'attack_card')}
+            # actions = {17: (8, 'attack_card'), 16: (3, 'attack_card'), 15: (13, 'attack_card')}
             total_actions = len(actions)
             sm = self.space_marines.combat_teams
 
-            # TODO: CUE UP 1st ACTION CARD AND FLIP BETWEEN SM SELECTIONS WITH ORANGE BOX
-            # add selection WASD, ENTER into each card type to control selectors
+# TODO: CUE UP 1st ACTION CARD AND FLIP BETWEEN SM SELECTIONS WITH ORANGE BOX
+# add selection WASD, ENTER into each card type to control selectors
             if self.ac_count <= total_actions and pyxel.btnp(pyxel.KEY_RETURN):
-
-                cardtype = actions.get(a_list[self.ac_count])[1]
-                cardteam = actions.get(a_list[self.ac_count])[0]
+                cardtype = actions.get(a_list[self.ac_count-1])[1]
+                cardteam = actions.get(a_list[self.ac_count-1])[0]
+                # print(f"cardteam = {cardteam}") #int  13
+                # print(f"cardtype = {cardtype}") #str 'attack_card
 
                 if cardtype == "attack_card":
                     lgs = self.location_and_spawns.spawned_left_swarms
@@ -1409,17 +1441,19 @@ class App:
                         attacking_marines, lgs, rgs)
 
                     self.space_marines.atk_info_sort(attack_values)
-
+                    if self.space_marines.phase_two == True:
+                        self.space_marines.defGs_info_sort()
 
                 elif cardtype == "support_card":
                     # self.space_marines.support(supporting_marines)
                     print("support")
+
                 else:
                     if cardtype == "move_act_card":
                         # self.space_marines.move_action(move_marines) #action_marines?
                         print("action+move")
-            
-                self.ac_count += 1
+
+                self.ac_count -= 1
             self.space_marines.update()
                 
 

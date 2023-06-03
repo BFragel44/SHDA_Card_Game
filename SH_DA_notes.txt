@@ -1,0 +1,236 @@
+#COMPONENT LIST#
+
+- 128 TOTAL cards
+	18 Action Cards
+	2 Brood Lord Cards
+	30 Event Cards
+	36 Genestealer Cards
+	22 Location Cards
+	12 Space Marine Cards
+	8 Terrain Cards
+- 12 Support Tokens
+- 6 Combat Team Markers
+- 1 Combat Die
+
+
+#COMPONENT BREAKDOWN#
+------------
+Action Cards (18)
+
+These cards are used by players to perform a number of activities with their Space Marines. 
+This includes attacking Genestealers, moving to more strategic positions, and supporting 
+their battle-brothers in combat. These cards are colour coded, with three cards matching 
+the colour of each combat team.
+------------
+------------
+Brood Lord Cards (2)
+
+These Genestealers are deadlier than normal Genestealers. They are never shuffled into the 
+Genestealer deck and are only used when instructed by a special Location card.
+------------
+------------
+Event Cards (30)
+
+One of these cards is drawn each game round, and represents thematic effects that can benefit 
+or harm the Space Marines. The information on the bottom of these cards is used to move 
+Genestealers and spawn newand spawn new ones into play.
+------------
+------------
+Genestealer Cards (36)
+
+These cards are used to represent hostile creatures that want nothing more than to 
+rip Space Marines into tiny bits. They can be placed face down in a blip pile, or face up
+engaged with a Space Marine card.
+------------
+------------
+Location Cards
+
+These cards represent the different places within the Space Hulk that Space Marines 
+can travel to. Each Location has different effects and terrain which greatly changes the
+feel of the game. Three of these cards are destinations which the Space Marines need to 
+reach in order to win the game while four others are used during setup.
+------------
+------------
+Space Marine Cards
+
+These cards represent an elite squad of Space Marines which players control 
+throughout the game. The coloured background of each of these cards is used to
+identify which combat team it belongs to.
+------------
+------------
+Terrain Cards
+
+These cards are placed next to Space Marine cards as instructed by Location cards. 
+They mark the specific positions where Genestealers may spawn, and may have 
+specific abilities listed on them.
+------------
+------------
+Support Tokens
+
+These tokens represent the combined fire and aid that Space Marines provide for
+each other, and are used to reroll a diewhen attacking or defending.
+------------
+------------
+Combat Team Markers
+
+These markers are chosen by each player at the start of the game to show which colour(s) 
+of Space Marines are under his control.
+------------
+------------
+Combat Die
+
+This die is mainly used to determine the result of Space Marine and Genestealer attacks.
+------------
+############
+------------
+
+Death Angel is played over a number of game rounds until either all Space Marines have been
+slain or they have won the game. During each game round, players perform the following phases in order:
+
+1 - CHOOSE ACTIONS PHASE
+Each player secretly chooses which Action card he would like to resolve this round.
+
+2 - RESOLVE ACTIONS PHASE
+Each player resolves the Action card that he chose during phase 1. These cards are 
+resolved in ascending order starting with the lowest numbered card.
+
+3 - GENESTEALER ATTACK PHASE
+Each swarm of Genestealers in play attacks the Space Marine
+that it is engaged with.
+
+4 - EVENT PHASE
+The current player draws the top card of the Event deck and resolves it.
+
+
+#####
+
+1. Event card drawn first card does not resolve the event, only spawns GS.
+2. Spawn the 2 Swarms noted on the first event card.
+{'Card Name': 'Second Wind', 
+'Card Effect': 'INSTINCT: Choose 1 SM. EACH time he rolls a 0 while DEFENDING next round, the attack MISSES.', 
+'L Spawn': 'yt_yellow', 
+'R Spawn': 'yt_red', 
+'GS Maneuver ': 'up_down_chevrons', 
+'GS Emblem': 'stingray', 
+'card_num': 29}
+
+void lock = TWO_YELLOW & ONE_WHITE
+first event card = major spawn yellow & major spawn red
+
+gs left formation [0,1,2,3]
+
+pyxel.blt(gs_left_x[3], gs_border_y[0], 0, 96, 0, 16, 16) # GS spawn L portrait 4
+pyxel.blt(gs_left_x[0], gs_team_y[0], 0, 112, 0, 16, 16)     # GS spawn team 1
+
+## States ##
+#-------------#
+# 1. Main Menu = MainMenuState()
+# 2. Main Game Board = GameBoardState()
+#   2a. Resolve Action Cards (Main Game Board with selectors)
+#   2b. Attack/Defend rolls (Main Game Board with overlay)
+#   2c. Travel Phase
+#   2d. Space Marine Death
+# 3. Select Action Cards = SelectActionState()
+# 4. Victory Screen
+# 5. Game Over/Failure Screen
+
+---
+Coming back from Action Card Window 
+to Resolve Actions Phase (Main Board)
+---
+shda_MAIN REWORK.py
+-------------Align with Line 1325------------------
+App.update():
+# "if" Main Game Window Check
+## Press "Q":
+### ...to quit game
+
+# "if" Press "Z":
+## 1. location_card_draw()    # sorts each terrain card into the 4 locations (L terrain 1 & 2, R terrain 1 & 2)
+## 2. event_cards.draw_card() # draws event card after turn 1 (NO DRAW() WIP)
+## 3. gs_spawn_locs(self.drawn_event_card) # Returns L & R GS spawn info, also will read event card info for GS shifting etc (WIP)
+
+# "if" Press "N" when window_state = Main Game Window
+## Switch to Action Card Window
+
+
+# elif window_state = Action Card Window
+## action_cards.update() # WASD + ENTER controls for AC selection. Switches self.confirm_choices to = 1 (confirm choices miniscreen) or removes selected ACs from options until 3 are selected.
+## "if" Press "N" and action_cards.confirm_choices = 0
+### return to main game screen/window_state = 0
+## "if" action_cards.confirm_choices = 2
+### switch to Resolve Action Phase (window_state = 2)
+
+# "if" Resolve Action Phase (window_state = 2)
+## actions = organize_acards(sorts the arg -> action_cards.sort_card_numbers - returns dict of unsorted action cards, card_dict = {1: (8, 'attack_card'), 8: (3, 'support_card'),..})
+## a_list = sorted action card number list -> [15, 16, 17]
+## total_actions = 3 -> len(actions)
+## sm = space_marines class instance sm_deck -> list of dicts with sm info
+
+
+
+## "if" ac_count (starts at 0) <= total_actions (usually 3) & Press "ENTER"
+### cardtype = "attack_card" -> str representing type of card
+### cardteam = 13 -> int representing color number of team
+
+### "if" cardtype = "attack"
+#### lgs = spawned_left_swarms (dict of dicts, 0: {"terrain_color": None, "g_stealers": []},)
+#### lgs = spawned_right_swarms " " "
+#### attacking_marines = list of dicts, space marines matched to the cardteam int
+1363 below
+#### sm.attack_prep(attacking_marines, lgs, rgs) = returns list of enemies in range (PROBABLY WHY EVERYTHING IS BROKEN)
+1366 below
+#### sm.atk_info_sort(attack_values) = sets phase_one to TRUE, sets atk_package to attack_values
+#### if sm.phase_two = TRUE
+##### sm.defGs_info_sort() = seems completely broken...goal is to return gs defender list?
+
+### reorg_skeleton.py Action Resolution Rework ###
+ResolveActionState.update()
+    1.[[[GATE_1]]] if not self.marine_selectors: (Defaults to False)
+        [[[GATE_2/BUTTON]]] if no self.current_card and self.action_list exists + ENTER is pressed:
+            [[[GATE_3 ACTIVATOR]]] self.cardtype = "attack_card" (string, 1 of 3 action card types)
+            self.cardteam = 13            (int, 1 of 3 team colors, sets up arg for self.attack_selectors())
+            self.current_card = 15        (int, 1 of 3 action card numbers, .pop(0) from action_list)
+            [[[GATE_3_A]]] if self.cardtype does NOT = None:
+                [[[GATE_1 ACTIVATOR]]] self.marine_selectors = True
+
+    2.[[[GATE_1]]] if self.marine_selectors exists: (ACTIVATED above)
+        [[[BUTTON]]] if ENTER is pressed:
+            [[[GATE_3_B]]] if self.cardtype == "attack_card":
+                [[[GATE_4 ACTIVATOR]]] self.attack_selectors(cardteam) (sends value to self.atk_package)
+                [[[GATE_1 DEACTIVATOR]]] self.marine_selectors = False
+
+    3A.[[[GATE_4_A]]] if self.atk_package exists:
+        [[[GATE_5]]] if self.phase_one == True:
+            [[[BUTTON]]] W pressed and self.sm_choice > 0:
+                self.sm_choice -= 1 (selection UP)
+            [[[BUTTON]]] S pressed and self.sm_choice < len(self.atk_package) - 1:
+                self.sm_choice += 1 (selection DOWN)
+            
+            3B.[[[BUTTON]]] if F is pressed:
+                self.opponents['attacker'] = self.sm_list[self.sm_choice] (this is the selected SM's int formation number)
+                for facing, val_dict in self.atk_package.items(): ( facing = LEFT, val_dict = {1: [2]} )
+                    [[[VALUE_MATCH]]]if self.opponents['attacker']+1 in val_dict:
+                        self.direction is given the facing
+                        [[[GATE_5 DEACTIVATOR]]] self.phase_one = False
+                        [[[GATE_6 ACTIVATOR]]] self.phase_two = True
+
+                        [[[GATE_1 DEACTIVATOR]]] self.marine_selectors = False # resets marine_selectors
+                        [[[GATE_2 DEACTIVATOR]]] self.current_card = None      # resets the ability to press enter
+    
+    4.[[[GATE_6]]] if self.phase_two == True: (phase 2 is the GS attackee selection phase)
+        
+
+
+        
+
+
+
+
+
+
+ResolveActionState.draw()
+    3B.[[[]]]
+
+    
+
