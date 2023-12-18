@@ -415,6 +415,7 @@ class Location_and_spawns:
         right1_formation_num = 6 - self.loc_terrain_1R[1]
         right2_formation_num = 6 - self.loc_terrain_2R[1]
 
+
         ##PACKAGES ALL TERRAIN INFO ABOVE AND CREATES EACH TERRAIN IMG AND PLACEMENT PER LOCATION CARD
         # pyxel.blt(x, y, img, u, v, w, h)
         left_loc_1 = pyxel.blt(

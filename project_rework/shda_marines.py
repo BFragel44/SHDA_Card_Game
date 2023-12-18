@@ -85,22 +85,15 @@ sm_visual_dimms = {
     "card_border_w": 65,
     "card_border_h": 33}
 
-
-# shuffle the cards
 def shuffle_deck(combat_teams):
-    formation_numbers = [1,2,3,4,5,6]
+    # Create a list formation numbers from 1-6
+    formation_numbers = list(range(1, 7))
     random.shuffle(formation_numbers)
-    for marine in combat_teams:   
-        num = formation_numbers.pop(0)
-        set_formation = {'formation_num': num}
-        marine.update(set_formation)
-        if num <= 3:
-            set_facing = {'facing': 'LEFT'}
-            marine.update(set_facing)
-        else:
-            set_facing = {'facing': 'RIGHT'}
-            marine.update(set_facing)
-    return(combat_teams)
+    # Assign random formation numbers, set facing accordingly
+    for marine in combat_teams:
+        marine['formation_num'] = formation_numbers.pop()  # Pop a unique formation number
+        marine['facing'] = 'LEFT' if marine['formation_num'] <= 3 else 'RIGHT'
+    return combat_teams
 
 
 class Space_marines:
@@ -120,6 +113,7 @@ class Space_marines:
     def update(self):
         if self.atk_package:
             if self.phase_one:
+                print("self.sm_list = ", self.sm_list)
                 if pyxel.btnp(pyxel.KEY_W) and self.sm_choice > 0:
                     self.sm_choice -= 1
 
@@ -157,11 +151,12 @@ class Space_marines:
                 self.sm_list.append(sm-1)
         self.phase_one = True
         self.atk_package = attack_values
+        print("self.atk_package from shda_marines.py = ",self.atk_package)
     
     def defGs_info_sort(self):
         for k,v in self.atk_package.items():
             # k,v = {'LEFT': {2: [2]}}
-# TODO problem area #2
+
             for facing, vs_list in v.items():
                 #facing, vs_dict = LEFT, {3: [2], 2: [2]}
                 for gs_list in vs_list:
@@ -190,7 +185,7 @@ class Space_marines:
                  if len(v["g_stealers"]) != 0]
         # left = [(0, ['claws', 'stingray'])] ## list --> tuple(int, [list])
         # right = [(3, ['tails'])]
-
+# TODO may be out of date since marines are now 1-6 instead of 0-5
         # GS formation numbers MUST BE +1 in order to line up with ATK RANGE!!!!!
         gs_in_range = {}
         left_dict = {}
@@ -269,48 +264,3 @@ class Space_marines:
             else:
                 for y_val in y_arrow_list:
                     pyxel.blt(sm_visual_dimms["right_arrow_x"], y_val, 0, 10, 32, 6, 6)
-
-### atk_package() DRAW
-            # if self.atk_package:
-            #     gs_left_x = 5
-            #     gs_right_x = 183
-                
-            #     if self.phase_one:
-            #         selection = self.sm_list[self.sm_choice]
-            #         #marine
-            #         pyxel.rectb(
-            #             card_border_x - 2,
-            #             card_border_y[selection] - 2,
-            #             card_border_w + 4,
-            #             card_border_h + 4,
-            #             9)
-                
-            #     elif self.phase_two:
-            #         print(f"gs_choice = {self.gs_choice}")
-            #         #selected marine
-                    
-            #         pyxel.rectb(card_border_x - 2,
-            #             card_border_y[self.sm_list[self.sm_choice]] - 2,
-            #             card_border_w + 4,
-            #             card_border_h + 4,
-            #             13)
-                    
-            #         if self.direction == "LEFT":
-            #             selection = self.gs_list[self.gs_choice]
-            #             #gs
-            #             pyxel.rectb(gs_left_x,
-            #                 card_border_y[selection] - 2,
-            #                 card_border_w + 4,
-            #                 card_border_h + 4,
-            #                 9)
-                    
-            #         elif self.direction == 'RIGHT':
-            #             #gs
-            #             pyxel.rectb(gs_right_x,
-            #                 card_border_y[self.gs_list[self.gs_choice]] - 2,
-            #                 card_border_w + 4,
-            #                 card_border_h + 4,
-            #                 9)
-            #     else:
-            #         pyxel.rect(screen_x/2-25, screen_y/2-25, 50, 15, 8)
-            #         pyxel.text(screen_x/2-24, screen_y/2-25, "No Valid ATK", 7)
