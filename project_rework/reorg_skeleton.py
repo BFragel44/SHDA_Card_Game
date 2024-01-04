@@ -91,7 +91,7 @@ class SelectActionState(GameState):
         # Check for input to select an action card
         self.action_cards.update()    
         if self.action_cards.sorted_cards:
-# Checks if action cards have been selected, sends them to GameState & switches back to MainGameScreen
+        # Checks if action cards are selected, sends them to GameState & switches back to MainGameScreen
             action_card_choices = self.action_cards.sorted_cards
             self.next_state = ResolveActionState(action_card_choices)
 
@@ -291,7 +291,7 @@ class ResolveActionState(GameState):
 class App:
     def __init__(self):
         pyxel.init(SCREEN_X, SCREEN_Y, title="SPACE HULK: DEATH ANGEL", fps=30)
-        pyxel.load("sh_da.pyxres")
+        pyxel.load("project_rework\sh_da.pyxres")
         pyxel.mouse(True)
         self.state = MainMenuState()
         pyxel.run(self.update, self.draw)

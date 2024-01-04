@@ -17,7 +17,7 @@ def create_location_deck():
     final_locs
     """
     final_locs = []
-    data = "location_cards.csv"
+    data = "project_rework\location_cards.csv"
     df = pd.read_csv(data)
     df.set_index("location")
     df.to_dict("dict")

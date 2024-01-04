@@ -63,7 +63,7 @@ combat_teams = [
 
     {'sm_name':'Brother Valencio',
         'team_color': 8,
-        'visual': (32, 16),             
+        'visual': (32, 16),
         'attk_range': 2, 
         'facing': 'setup',
         'formation_num': 0,

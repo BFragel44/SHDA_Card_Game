@@ -14,7 +14,7 @@ def create_event_deck():
     Returns:
     event_deck
     """
-    data = "event_cards.csv"
+    data = "project_rework\event_cards.csv"
     df = pd.read_csv(data)
     df["card_num"] = df.reset_index().index
     df.to_dict("dict")
