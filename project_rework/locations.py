@@ -14,7 +14,7 @@ def create_location_deck():
     a main location deck - complete with the VOID LOCK on top to start.
     ----------
     Returns:
-    final_locs
+    final_locs - LIST of DICTs (shuffled per game setup rules on void lock)
     """
     final_locs = []
     data = "project_rework\location_cards.csv"
@@ -162,10 +162,11 @@ class Location_and_spawns:
 
     ####
     def populate_blips(self):
+        # POPULATES LEFT & RIGHT BLIP PILES FROM GS DECK
         self.left_gs_cards = [self.gs_deck.pop(i) for i in range(self.left_blip_num)]
-        self.left_gs_num = len(self.left_gs_cards)
-
         self.right_gs_cards = [self.gs_deck.pop(i) for i in range(self.right_blip_num)]
+        # UPDATES LEFT & RIGHT BLIP PILE NUMBERS
+        self.left_gs_num = len(self.left_gs_cards)
         self.right_gs_num = len(self.right_gs_cards)
 
     ####

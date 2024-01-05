@@ -12,7 +12,7 @@ def create_event_deck():
     creates the EVENT deck for the start of play.
     ----------
     Returns:
-    event_deck
+    event_deck - LIST of DICTs (shuffled)
     """
     data = "project_rework\event_cards.csv"
     df = pd.read_csv(data)
@@ -25,8 +25,8 @@ def create_event_deck():
 
 # #this is the initial, shuffled, Event deck
 event_deck = create_event_deck()
-
 ###########################################################
+
 class Event_cards:
     def __init__(self, initial_deck):
         self.deck = initial_deck
@@ -35,7 +35,17 @@ class Event_cards:
         self.discard = []
 
     def draw_card(self):
-        # initial event card only spawns genestealers
+        """
+        ----------
+        Parameters:
+        None
+        ----------
+        Purpose:
+        Draws an EVENT CARD.
+        ----------
+        Returns:
+        self.current_card - LIST of DICT (which is one EVENT CARD)
+        """
         if self.cards_drawn < 1:
             self.current_card.append(self.deck.pop(0))
             self.cards_drawn += 1
