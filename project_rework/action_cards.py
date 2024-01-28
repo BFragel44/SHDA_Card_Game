@@ -89,33 +89,69 @@ class Action_cards:
         self.sorted_cards = None
 
     def ac_selection(self):
+        """
+        Handles the selection and deselection of action cards.
+
+        This method uses the current position of the selection rectangle to determine the selected card.
+        - If the selected card is not already in the list of selected cards and its row is not blocked, it's added to the list.
+        - If the selected card is already in the list, it's removed from the list.
+        - If the selected card's row is blocked and the card is not in the list, a sound is played.
+
+        The method also manages a list of blocked rows. When a card is selected, its row is added to the list of blocked rows.
+        When a card is deselected, its row is removed from the list of blocked rows.
+
+        Returns no value. It modifies the `ac_selected_list` and `blocked_out_rows` attributes of the `self` object.
+        """
+        # Get the x-coordinate and column of the selection rectangle
         x_value = self.sel_rect_x
         x_choice = self.select_rect_col
 
+        # Get the y-coordinate and row of the selection rectangle
         y_value = self.sel_rect_y
         y_choice = self.select_rect_row
 
+        # Create a tuple representing the selected card
         single_choice = (x_choice[x_value], y_choice[y_value])
+        # Get the row of the selected card
         y_check = single_choice[1]
 
+        # Check if < 3 cards have been selected
         if len(self.ac_selected_list) < 3:
+            # If the selected card is not already selected and its row is not blocked
             if (single_choice not in self.ac_selected_list and y_check not in self.blocked_out_rows):
+                # Add the selected card to the list of selected cards
                 self.ac_selected_list.append(single_choice)
+                # Block the row of the selected card
                 self.blocked_out_rows.append(y_check)
+            # If the selected card is not already selected but its row is blocked, plays a "no" sound
             elif (single_choice not in self.ac_selected_list and y_check in self.blocked_out_rows):
+                
                 pyxel.play(1, 12)
             else:
+                # If the selected card is already selected
                 if single_choice in self.ac_selected_list:
+                    # Remove the selected card from the list of selected cards
                     self.ac_selected_list.remove(single_choice)
+                    # Unblock the row of the selected card
                     self.blocked_out_rows.remove(single_choice[1])
 
 
     def sort_card_numbers(self):
         """
+        Sorts the action cards based on their order numbers.
+
+        This method creates a dictionary where the keys are the order numbers of the action cards and the values are tuples containing the team color and the type of the action card. The dictionary is then sorted by the order numbers.
+
+        The method uses the `ac_prev_turn` attribute, which is a list of tuples representing the action cards. Each tuple contains the x-coordinate (representing the type of the action card) and the y-coordinate (representing the team color) of the action card.
+
         Returns
         -------
-        card_dict: dict of action card order numbers.
+        dict
+            A dict where the keys = order numbers of the action cards and the values are tuples containing the team color and the type of the action card. The dict is sorted by the order numbers.
 
+        Example
+        -------
+        If `ac_prev_turn` is [(16, 0), (16, 86), (16, 172)], the method might return {1: (8, 'attack_card'), 2: (3, 'attack_card'), 3: (13, 'attack_card')}.
         """
         card_dict = {}
         card_type = {16: "attack_card", 88: "support_card", 160: "move_act_card"}
@@ -130,47 +166,60 @@ class Action_cards:
         card_dict = {key: card_dict[key] for key in sorted(card_dict.keys())}
         return card_dict
     ##### card_dict = {1: (8, 'attack_card'), 8: (3, 'support_card'), 17: (13, 'move_act_card')}
-    # TODO BROKEN FROM HERE --- WILL NEED TO USE THIS TO FIND FORMATION OF EACH CARD'S SMs with SM CLASS FROM WITHIN APP()
 
     def update(self):
-# WASD for ACTION CARD SCREEN
-        if self.confirm_choices == 0:
-            if pyxel.btnp(pyxel.KEY_W) and self.arrow_row != 0:
-                self.arrow_row -= 1
-                self.sel_rect_y -= 1
-            if pyxel.btnp(pyxel.KEY_S) and self.arrow_row != 2:
-                self.arrow_row += 1
-                self.sel_rect_y += 1
-            if pyxel.btnp(pyxel.KEY_A) and self.sel_rect_x != 0:
-                self.sel_rect_x -= 1
-            if pyxel.btnp(pyxel.KEY_D) and self.sel_rect_x != 2:
-                self.sel_rect_x += 1
-# ENTER to Proceed to CONFIRMATION MINISCREEN
-            if pyxel.btnp(pyxel.KEY_RETURN) and len(self.ac_selected_list) < 3:
+        """
+        Handles user input to select action cards and updates game state.
+
+        This method responds to left mouse button clicks to select action cards based on the mouse position. 
+        
+        It updates the selection rectangle and arrow position accordingly. 
+        
+        If two cards are selected, a third card is added upon the next click, the selection is cleared, 
+        
+        and the game state progresses.
+
+        The method utilizes several attributes: 
+            `ac_selected_list` to track selected cards, 
+            `ac_prev_turn` and `ac_prev_blocked_out` to store the previous turn's state, 
+            `confirm_choices` to track confirmation state, 
+            `sorted_cards` to store the sorted order of action cards.
+        """
+        # Check if left mouse button was pressed
+        if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT):
+            # Calculate which card was clicked based on mouse position
+            clicked_row = pyxel.mouse_y // 86  # Each row is 86 pixels high
+
+            # Adjust mouse x position for starting x value and gap between cards
+            adjusted_mouse_x = pyxel.mouse_x - 16
+            if adjusted_mouse_x > 72:
+                adjusted_mouse_x += 2  # Add gap for cards 2 and 3
+
+            clicked_col = adjusted_mouse_x // 72  # Each column is 72 pixels wide
+
+            # Check if clicked card is within valid range
+            if 0 <= clicked_row <= 2 and 0 <= clicked_col <= 2:
+                self.arrow_row = clicked_row
+                self.sel_rect_y = clicked_row
+                self.sel_rect_x = clicked_col
+            # If clicked cards are not at 2, continue selecting
+            if len(self.ac_selected_list) < 2:
                 self.ac_selection()
-            if pyxel.btnp(pyxel.KEY_RETURN) and len(self.ac_selected_list) == 3:
+            # If clicked cards are at 2 and mouse is clicked, add 3rd card and proceed to next game state --RESOLVE ACTIONS--
+            elif len(self.ac_selected_list) == 2:
+                self.ac_selection()
                 self.confirm_choices = 1
-# Controls for MINISCREEN (UP, DOWN, "F" to select)
-        if self.confirm_choices == 1:
-            if pyxel.btnp(pyxel.KEY_F) and self.miniscreen_choice == 0:
                 self.ac_prev_turn = self.ac_selected_list
                 self.ac_prev_blocked_out = self.blocked_out_rows
                 self.ac_selected_list = []
                 self.confirm_choices = 2
                 self.sorted_cards = self.sort_card_numbers()
-                
-            if pyxel.btnp(pyxel.KEY_F) and self.miniscreen_choice == 1:
-                self.confirm_choices = 0
-                self.ac_selected_list.pop(-1)
-                self.blocked_out_rows.pop(-1)
-# UP & DOWN in MINISCREEN
-            if pyxel.btnp(pyxel.KEY_W) and self.miniscreen_choice != 0:
-                self.miniscreen_choice -= 1
-            if pyxel.btnp(pyxel.KEY_S) and self.miniscreen_choice != 1:
-                self.miniscreen_choice += 1
 
-    # TODO clean up ACTION CARD visuals
+##################
+
+
     def _draw(self):
+# TODO clean up ACTION CARD visuals
         pyxel.cls(0)
         pyxel.clip(0, 0, 257, 257)
 
@@ -284,6 +333,7 @@ class Action_cards:
             miniscreen_arrow = (118, 124)
             pyxel.blt(118, miniscreen_arrow[self.miniscreen_choice], 0, 10, 32, 6, 6)
 
+
 # self.ac_prev_turn = [(16, 0), (88, 86), (160, 172)]
 class ActionOverlay:
     def __init__(self):
@@ -318,55 +368,5 @@ class ActionOverlay:
                 self.space_marines.update()
 
     def _draw(self):
-        if self.window_state == 2:
-            pyxel.clip()
-            pyxel.cls(0)
-            ### atk_package() DRAW
-            # if self.atk_package:
-            #     gs_left_x = 5
-            #     gs_right_x = 183
-
-            #     if self.phase_one:
-            #         card_border_x = 96
-            #         card_border_y = (40, 76, 112, 148, 184, 220)
-            #         card_border_w = 65
-            #         card_border_h = 33
-            #         selection = self.sm_list[self.sm_choice]
-            #         #marine
-            #         pyxel.rectb(
-            #             card_border_x - 2,
-            #             card_border_y[selection] - 2,
-            #             card_border_w + 4,
-            #             card_border_h + 4,
-            #             9)
-
-            #     elif self.phase_two:
-            #         print(f"gs_choice = {self.gs_choice}")
-            #         #selected marine
-
-            #         pyxel.rectb(card_border_x - 2,
-            #             card_border_y[self.sm_list[self.sm_choice]] - 2,
-            #             card_border_w + 4,
-            #             card_border_h + 4,
-            #             13)
-
-            #         if self.direction == "LEFT":
-            #             selection = self.gs_list[self.gs_choice]
-            #             #gs
-            #             pyxel.rectb(gs_left_x,
-            #                 card_border_y[selection] - 2,
-            #                 card_border_w + 4,
-            #                 card_border_h + 4,
-            #                 9)
-
-            #         elif self.direction == 'RIGHT':
-            #             #gs
-            #             pyxel.rectb(gs_right_x,
-            #                 card_border_y[self.gs_list[self.gs_choice]] - 2,
-            #                 card_border_w + 4,
-            #                 card_border_h + 4,
-            #                 9)
-            #     else:
-            #         pyxel.rect(screen_x/2-25, screen_y/2-25, 50, 15, 8)
-            #         pyxel.text(screen_x/2-24, screen_y/2-25, "No Valid ATK", 7)
-
+        pyxel.cls(0)
+        pyxel.text(160, 160, "Action Overlay", 7)

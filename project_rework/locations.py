@@ -114,18 +114,12 @@ class Location_and_spawns:
         self.loc_terrain_1L = (
             self.locations_deck[self.room_number]["l_terrain_1"],  # NAME
             self.locations_deck[self.room_number]["d_l_terrain_1"] - 1,  # FORMATION
-            self.terrain_imgs.get(self.locations_deck[self.room_number]["l_terrain_1"])[
-                1
-            ],
-        )  # COLOR
+            self.terrain_imgs.get(self.locations_deck[self.room_number]["l_terrain_1"])[1],)  # COLOR
 
         self.loc_terrain_2L = (
             self.locations_deck[self.room_number]["l_terrain_2"],
             self.locations_deck[self.room_number]["d_l_terrain_2"] - 1,
-            self.terrain_imgs.get(self.locations_deck[self.room_number]["l_terrain_2"])[
-                1
-            ],
-        )
+            self.terrain_imgs.get(self.locations_deck[self.room_number]["l_terrain_2"])[1],)
 
         terrain_marker_1L = {"terrain_color": self.loc_terrain_1L[2]}
         terrain_marker_2L = {"terrain_color": self.loc_terrain_2L[2]}
@@ -135,18 +129,12 @@ class Location_and_spawns:
         self.loc_terrain_1R = (
             self.locations_deck[self.room_number]["r_terrain_1"],
             self.locations_deck[self.room_number]["u_r_terrain_1"],
-            self.terrain_imgs.get(self.locations_deck[self.room_number]["r_terrain_1"])[
-                1
-            ],
-        )
+            self.terrain_imgs.get(self.locations_deck[self.room_number]["r_terrain_1"])[1],)
 
         self.loc_terrain_2R = (
             self.locations_deck[self.room_number]["r_terrain_2"],
             self.locations_deck[self.room_number]["u_r_terrain_2"],
-            self.terrain_imgs.get(self.locations_deck[self.room_number]["r_terrain_2"])[
-                1
-            ],
-        )
+            self.terrain_imgs.get(self.locations_deck[self.room_number]["r_terrain_2"])[1],)
 
         terrain_marker_1R = {"terrain_color": self.loc_terrain_1R[2]}
         terrain_marker_2R = {"terrain_color": self.loc_terrain_2R[2]}
@@ -157,8 +145,7 @@ class Location_and_spawns:
             self.loc_terrain_1L,
             self.loc_terrain_2L,
             self.loc_terrain_1R,
-            self.loc_terrain_2R,
-        ]
+            self.loc_terrain_2R,]
 
     ####
     def populate_blips(self):
@@ -171,6 +158,13 @@ class Location_and_spawns:
 
     ####
     def location_card_draw(self):
+        """
+        Draws the next location card and sorts its terrain into four categories.
+
+        This method increments the room number, updates location name, and sorts the terrain of the location into four categories: `loc_terrain_1L`, `loc_terrain_2L`, `loc_terrain_1R`, and `loc_terrain_2R`. Each category is a tuple containing the name, formation, and color of the terrain.
+
+        The method also updates the `room_terrain` attribute with a list of the 4 terrain categories.
+        """
         if self.room_number < self.number_of_locations - 1:
             self.room_number += 1
             self.location_name = self.locations_deck[self.room_number]["location"]
@@ -178,55 +172,45 @@ class Location_and_spawns:
         self.loc_terrain_1L = (
             self.locations_deck[self.room_number]["l_terrain_1"],  # NAME
             self.locations_deck[self.room_number]["d_l_terrain_1"],  # FORMATION
-            self.terrain_imgs.get(self.locations_deck[self.room_number]["l_terrain_1"])[
-                1
-            ],
-        )  # COLOR
+            self.terrain_imgs.get(self.locations_deck[self.room_number]["l_terrain_1"])[1],)  # COLOR
 
         self.loc_terrain_2L = (
             self.locations_deck[self.room_number]["l_terrain_2"],
             self.locations_deck[self.room_number]["d_l_terrain_2"],
-            self.terrain_imgs.get(self.locations_deck[self.room_number]["l_terrain_2"])[
-                1
-            ],
-        )
+            self.terrain_imgs.get(self.locations_deck[self.room_number]["l_terrain_2"])[1],)
 
         self.loc_terrain_1R = (
             self.locations_deck[self.room_number]["r_terrain_1"],
             self.locations_deck[self.room_number]["u_r_terrain_1"],
-            self.terrain_imgs.get(self.locations_deck[self.room_number]["r_terrain_1"])[
-                1
-            ],
-        )
+            self.terrain_imgs.get(self.locations_deck[self.room_number]["r_terrain_1"])[1],)
 
         self.loc_terrain_2R = (
             self.locations_deck[self.room_number]["r_terrain_2"],
             self.locations_deck[self.room_number]["u_r_terrain_2"],
-            self.terrain_imgs.get(self.locations_deck[self.room_number]["r_terrain_2"])[
-                1
-            ],
-        )
+            self.terrain_imgs.get(self.locations_deck[self.room_number]["r_terrain_2"])[1],)
 
         self.room_terrain = [
             self.loc_terrain_1L,
             self.loc_terrain_2L,
             self.loc_terrain_1R,
-            self.loc_terrain_2R,
-        ]
+            self.loc_terrain_2R,]
 
     ####
     def gs_spawn_locs(self, drawn_event_card):
         """
-        Grabs the EVENT CARD's spawn colors and triangles, then sorts the number of cards from the L or R blip piles
-        each TERRAIN color shown on the EVENT CARD color will get.
+        Determines the spawn locations for the Genestealers based on the drawn event card.
 
-        Returns
-        -------
-        left_spawn_info : TYPE
-            DESCRIPTION.
-        right_spawn_info : TYPE
-            DESCRIPTION.
+        This function extracts the spawn colors and triangles from the drawn event card, and determines
+        the number of Genestealers to spawn from the L and R blip piles for each terrain color shown on the card.
 
+        Args:
+            drawn_event_card (list): A list of dictionaries representing the drawn event card. Each dictionary
+                contains information about the card, including the spawn colors and triangles.
+
+        Returns:
+            dict: A dictionary with keys 'left1', 'left2', 'right1', 'right2'. The value for each key is a tuple
+                where the first element is the spawn location and the second element is the terrain color. If no
+                Genestealers are to be spawned on a side, the value for that side will be None.
         """
 
         self.drawn_event_card = drawn_event_card
@@ -242,48 +226,37 @@ class Location_and_spawns:
 
         # TRIANGLE NUMBER AND TERRAIN COLOR FOR CURRENT EVENT CARD
         left_event_card_tri, left_event_card_color = (
-            self.drawn_event_card[0].get("L Spawn").split("_")
-        )
+            self.drawn_event_card[0].get("L Spawn").split("_"))
         right_event_card_tri, right_event_card_color = (
-            self.drawn_event_card[0].get("R Spawn").split("_")
-        )
+            self.drawn_event_card[0].get("R Spawn").split("_"))
 
         event_card_spawns = [
             (self.voidlock_spawns.get(left_event_card_tri), left_event_card_color),
-            (self.voidlock_spawns.get(right_event_card_tri), right_event_card_color),
-        ]
+            (self.voidlock_spawns.get(right_event_card_tri), right_event_card_color),]
 
-        swarm_spawn_sides = {
-            "left1": None,
-            "left2": None,
-            "right1": None,
-            "right2": None,
-        }
-
+        swarm_spawn_sides = {"left1": None,"left2": None,
+                             "right1": None,"right2": None,}
+        
+        # CHECKS LEFT TERRAINS FOR SPAWNS
         for terrain in [self.room_terrain[0], self.room_terrain[1]]:
             if event_card_spawns[0][1] == terrain[2]:
-                left_info1 = {
-                    "left1": (event_card_spawns[0][0], event_card_spawns[0][1])
-                }
+                left_info1 = {"left1": (event_card_spawns[0][0], event_card_spawns[0][1])}
+                
                 swarm_spawn_sides.update(left_info1)
             if event_card_spawns[1][1] == terrain[2]:
-                left_info2 = {
-                    "left2": (event_card_spawns[1][0], event_card_spawns[1][1])
-                }
+                left_info2 = {"left2": (event_card_spawns[1][0], event_card_spawns[1][1])}
                 swarm_spawn_sides.update(left_info2)
+        
         # CHECKS RIGHT TERRAINS FOR SPAWNS
         for terrain in [self.room_terrain[2], self.room_terrain[3]]:
-            # print(terrain[2]) # color
             if event_card_spawns[0][1] == terrain[2]:
-                right_info1 = {
-                    "right1": (event_card_spawns[0][0], event_card_spawns[0][1])
-                }
+                right_info1 = {"right1": (event_card_spawns[0][0], event_card_spawns[0][1])}
                 swarm_spawn_sides.update(right_info1)
+                
             if event_card_spawns[1][1] == terrain[2]:
-                right_info2 = {
-                    "right2": (event_card_spawns[1][0], event_card_spawns[1][1])
-                }
+                right_info2 = {"right2": (event_card_spawns[1][0], event_card_spawns[1][1])}
                 swarm_spawn_sides.update(right_info2)
+        
         return swarm_spawn_sides
         # [('2', 'red'), ('1', 'yellow')]
 
@@ -298,7 +271,7 @@ class Location_and_spawns:
         None.
 
         """
-        # swarm_spawn_sides =    {'left1': ('2', 'yellow'),
+        # swarm_spawn_sides = {'left1': ('2', 'yellow'),
         # 'left2': None,
         # 'right1': None,
         # 'right2': ('1', 'red')}
@@ -315,52 +288,45 @@ class Location_and_spawns:
                         spawn_placement["right"].append(swarm_spawn_sides[side])
             else:
                 del swarm_spawn_sides[side]
+        
         if spawn_placement["left"]:
             for spawn in spawn_placement["left"]:
                 left_spawn_amount = int(spawn[0])
                 left_spawn_color = spawn[1]
 
                 for spawn in self.spawned_left_swarms:
-                    if (
-                        self.spawned_left_swarms[spawn]["terrain_color"]
-                        == left_spawn_color
-                    ):
+                    if (self.spawned_left_swarms[spawn]["terrain_color"]
+                        == left_spawn_color):
                         for i in range(left_spawn_amount):
                             self.left_blip_num -= 1
                             each_spawn = self.left_gs_cards.pop(0)
-                            self.spawned_left_swarms[spawn]["g_stealers"].append(
-                                each_spawn
-                            )
+                            self.spawned_left_swarms[spawn]["g_stealers"].append(each_spawn)
+
         for key in self.spawned_left_swarms:
             if self.spawned_left_swarms[key]["g_stealers"]:
-                # self.gs_left_formation_num = key
                 self.gs_left_formation_num.append(key)
+        
         if spawn_placement["right"]:
             for spawn in spawn_placement["right"]:
                 right_spawn_amount = int(spawn[0])
                 right_spawn_color = spawn[1]
 
                 for spawn in self.spawned_right_swarms:
-                    if (
-                        self.spawned_right_swarms[spawn]["terrain_color"]
-                        == right_spawn_color
-                    ):
+                    if (self.spawned_right_swarms[spawn]["terrain_color"]== right_spawn_color):
                         for i in range(right_spawn_amount):
                             self.right_blip_num -= 1
                             each_spawn = self.right_gs_cards.pop(0)
-                            self.spawned_right_swarms[spawn]["g_stealers"].append(
-                                each_spawn
-                            )
+                            self.spawned_right_swarms[spawn]["g_stealers"].append(each_spawn)
+        
         for key in self.spawned_right_swarms:
             if self.spawned_right_swarms[key]["g_stealers"]:
-                # self.gs_right_formation_num = key
                 self.gs_right_formation_num.append(key)
 
     # self.spawned_left_swarms = {0: {'terrain_color': None, 'g_stealers': []},
     # self.left_gs_cards = ['Stingray', 'Claw', 'Claw']
 
     ####
-    def _draw(self):
+    def draw(self):
         # LOCATION CARD TRIANGLE INFO DRAW
         pyxel.rectb(96, 4, 65, 33, 7)  # LOCATION card border rectangle
         pyxel.text(111, 30, self.location_name, 7)  # LOCATION TEXT (ie "VOID LOCK")
@@ -376,39 +342,31 @@ class Location_and_spawns:
         right_tri_x = right_tri[1]
         right_tri_y = right_tri[2]
 
-        pyxel.blt(97, 20, left_tri_img, left_tri_x, left_tri_y, 16, 8)
-        pyxel.text(104, 21, self.left_spawn_num, 8)
-        pyxel.blt(144, 20, right_tri_img, right_tri_x, right_tri_y, 16, 8)
-        pyxel.text(150, 21, self.right_spawn_num, 0)
+        # LOCATION CARD TRIANGLE SPAWN DRAW
+        pyxel.blt(76, 29, left_tri_img, left_tri_x, left_tri_y, 16, 8)
+        pyxel.text(82, 30, self.left_spawn_num, 8)
+
+        pyxel.blt(164, 29, right_tri_img, right_tri_x, right_tri_y, 16, 8)
+        pyxel.text(171, 30, self.right_spawn_num, 0)
 
         # BLIP PILE DRAW
-        pyxel.blt(21, 4, 0, 192, 48, 32, 32)  # LEFT BLIP "SONAR" VISUAL
-        pyxel.text(36, 18, str(self.left_blip_num), 7)  # LEFT BLIP NUMBER
+        pyxel.blt(41, 4, 0, 192, 48, 32, 32)  # LEFT BLIP "SONAR" VISUAL
+        pyxel.text(56, 18, str(self.left_blip_num), 7)  # LEFT BLIP NUMBER
 
-        pyxel.blt(204, 4, 0, 192, 48, 32, 32)  # RIGHT BLIP "SONAR" VISUAL
-        pyxel.text(218, 18, str(self.right_blip_num), 7)  # RIGHT BLIP NUMBER
+        pyxel.blt(182, 4, 0, 192, 48, 32, 32)  # RIGHT BLIP "SONAR" VISUAL
+        pyxel.text(196, 18, str(self.right_blip_num), 7)  # RIGHT BLIP NUMBER
 
         # TERRAIN DRAW
         # IMAGES HAVE DANGER LEVEL (COLOR) BELOW THEM (EACH IMAGE HAS A 'H' VALUE OF 32)
-
         terrain_left_x = 75  # X COORDINATE FOR ALL LEFT TERRAIN PLACEMENTS
         terrain_right_x = 166  # X COORDINATE FOR ALL RIGHT TERRAIN PLACEMENTS
-        terrain_y = (
-            40,
-            76,
-            112,
-            148,
-            184,
-            220,
-        )  # Y COORDINATE FOR ALL TERRAIN PLACEMENTS
+        terrain_y = (40, 76, 112, 148, 184, 220,)  # Y COORDINATE FOR ALL TERRAIN PLACEMENTS
 
-        left1_img = self.terrain_imgs.get(
-            self.loc_terrain_1L[0]
-        )  # ACCESSES DICT ABOVE BY TERRAIN NAME (SELF.loc_terrain_1L) GETTING ITS FORMATION NUMBER
+        # ACCESSES DICT ABOVE BY TERRAIN NAME (SELF.loc_terrain_1L) GETTING ITS FORMATION NUMBER
+        left1_img = self.terrain_imgs.get(self.loc_terrain_1L[0])
         left2_img = self.terrain_imgs.get(self.loc_terrain_2L[0])
-        left1_formation_num = self.loc_terrain_1L[
-            1
-        ]  # THE NUMBER EACH TERRAIN CARD WILL BE PLACED ON THE LEFT AND RIGHT OF THE FORMATION
+        # THE NUMBER EACH TERRAIN CARD WILL BE PLACED ON THE LEFT AND RIGHT OF THE FORMATION
+        left1_formation_num = self.loc_terrain_1L[1]  
         left2_formation_num = self.loc_terrain_2L[1]
 
         right1_img = self.terrain_imgs.get(self.loc_terrain_1R[0])
@@ -416,16 +374,13 @@ class Location_and_spawns:
         right1_formation_num = 6 - self.loc_terrain_1R[1]
         right2_formation_num = 6 - self.loc_terrain_2R[1]
 
-
         ##PACKAGES ALL TERRAIN INFO ABOVE AND CREATES EACH TERRAIN IMG AND PLACEMENT PER LOCATION CARD
         # pyxel.blt(x, y, img, u, v, w, h)
         left_loc_1 = pyxel.blt(
-            terrain_left_x, terrain_y[left1_formation_num], 1, left1_img[0], 0, 16, 32
-        )
+            terrain_left_x, terrain_y[left1_formation_num], 1, left1_img[0], 0, 16, 32)
 
         left_loc_2 = pyxel.blt(
-            terrain_left_x, terrain_y[left2_formation_num], 1, left2_img[0], 0, 16, 32
-        )
+            terrain_left_x, terrain_y[left2_formation_num], 1, left2_img[0], 0, 16, 32)
 
         right_loc_1 = pyxel.blt(
             terrain_right_x,
@@ -434,8 +389,7 @@ class Location_and_spawns:
             right1_img[0],
             0,
             16,
-            32,
-        )
+            32,)
 
         right_loc_2 = pyxel.blt(
             terrain_right_x,
@@ -444,41 +398,21 @@ class Location_and_spawns:
             right2_img[0],
             0,
             16,
-            32,
-        )
+            32,)
 
         ### GS IMAGE COORDINATES ON IMAGE BANK
         gs_img = 96
-        swarm_dict = {
-            "tails": 112,
-            "skulls": 128,
-            "claws": 144,
-            "stingray": 160,
-        }
-
-        gs_left_x = (52, 35, 18, 1)  # X COORDINATES FOR LEFT SIDE GS PORTRAITS, R to L
-        gs_right_x = (
-            188,
-            205,
-            222,
-            239,
-        )  # X COORDINATES FOR RIGHT SIDE GS PORTRAITS, L to R
-        gs_img_y = (
-            40,
-            76,
-            112,
-            148,
-            184,
-            220,
-        )  # Y COORDINATES FOR ALL GS IMAGES, TOP TO BOTTOM
-        gs_team_y = (
-            57,
-            93,
-            129,
-            165,
-            201,
-            237,
-        )  # Y COORDINATES FOR ALL GS TEAM IMAGES, TOP TO BOTTOM
+        swarm_dict = {"tails": 112, "skulls": 128,
+                    "claws": 144, "stingray": 160,}
+        
+        # X COORDINATES FOR LEFT SIDE GS PORTRAITS, R to L
+        gs_left_x = (52, 35, 18, 1)
+        # X COORDINATES FOR RIGHT SIDE GS PORTRAITS, L to R
+        gs_right_x = (188, 205, 222, 239,)
+        # Y COORDINATES FOR ALL GS IMAGES, TOP TO BOTTOM
+        gs_img_y = (40, 76, 112, 148, 184, 220,)
+        # Y COORDINATES FOR ALL GS TEAM IMAGES, TOP TO BOTTOM
+        gs_team_y = (57, 93, 129, 165, 201, 237,)
 
         for left_swarms in self.spawned_left_swarms:
             if self.spawned_left_swarms[left_swarms]["g_stealers"]:
@@ -491,8 +425,8 @@ class Location_and_spawns:
                         gs_img,
                         0,
                         16,
-                        16,
-                    )
+                        16,)
+                    
                     pyxel.blt(
                         gs_left_x[row_number],
                         gs_team_y[left_swarms],
@@ -500,31 +434,28 @@ class Location_and_spawns:
                         swarm_dict.get(gs_left_team),
                         0,
                         16,
-                        16,
-                    )
+                        16,)
                     row_number += 1
+
         for right_swarms in self.spawned_right_swarms:
             if self.spawned_right_swarms[right_swarms]["g_stealers"]:
                 row_number = 0
-                for gs_right_team in self.spawned_right_swarms[right_swarms][
-                    "g_stealers"
-                ]:
-                    pyxel.blt(
-                        gs_right_x[row_number],
-                        gs_img_y[6 - right_swarms],
-                        0,
-                        gs_img,
-                        0,
-                        16,
-                        16,
-                    )
-                    pyxel.blt(
-                        gs_right_x[row_number],
-                        gs_team_y[6 - right_swarms],
-                        0,
-                        swarm_dict.get(gs_right_team),
-                        0,
-                        16,
-                        16,
-                    )
+                
+                for gs_right_team in self.spawned_right_swarms[right_swarms]["g_stealers"]:
+                    pyxel.blt(gs_right_x[row_number],
+                                gs_img_y[6 - right_swarms],
+                                0,
+                                gs_img,
+                                0,
+                                16,
+                                16,)
+                    
+                    pyxel.blt(gs_right_x[row_number],
+                                gs_team_y[6 - right_swarms],
+                                0,
+                                swarm_dict.get(gs_right_team),
+                                0,
+                                16,
+                                16,)
+                    
                     row_number += 1
