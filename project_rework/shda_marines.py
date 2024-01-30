@@ -13,7 +13,7 @@ combat_teams = [
         'facing': 'setup',
         'formation_num': 0,
         'status': 'alive',
-        'support_token': 0,
+        'support_tokens': 0,
         'team_id': 1,},
 
     {'sm_name':'Brother Scipio',
@@ -23,7 +23,7 @@ combat_teams = [
         'facing': 'setup',
         'formation_num': 0,
         'status': 'alive',
-        'support_token': 0,
+        'support_tokens': 0,
         'team_id': 2,},
 
     {'sm_name':'Sargeant Gideon',
@@ -33,7 +33,7 @@ combat_teams = [
         'facing': 'setup',
         'formation_num': 0,
         'status': 'alive',
-        'support_token': 0,
+        'support_tokens': 0,
         'team_id': 1,},
 
     {'sm_name':'Brother Noctis',
@@ -43,7 +43,7 @@ combat_teams = [
         'facing': 'setup',
         'formation_num': 0,
         'status': 'alive',
-        'support_token': 0,
+        'support_tokens': 0,
         'team_id': 2,},
 
     {'sm_name':'Brother Leon',
@@ -53,7 +53,7 @@ combat_teams = [
         'facing': 'setup',
         'formation_num': 0,
         'status': 'alive',
-        'support_token': 0,
+        'support_tokens': 0,
         'team_id': 1,},
 
     {'sm_name':'Brother Valencio',
@@ -63,7 +63,7 @@ combat_teams = [
         'facing': 'setup',
         'formation_num': 0,
         'status': 'alive',
-        'support_token': 0,
+        'support_tokens': 0,
         'team_id': 2,}]
 
 sm_visual_dimms = {
@@ -75,7 +75,7 @@ sm_visual_dimms = {
     "right_arrow_x": 154,
     "arrow_y": (41, 77, 113, 149, 185, 221),
     "card_border_x": 96,
-    "card_border_y": (40, 76, 112, 148, 184, 220),
+    "card_border_y": [40, 76, 112, 148, 184, 220],
     "card_border_w": 65,
     "card_border_h": 33}
 
@@ -139,7 +139,7 @@ class Space_marines:
                         sm_visual_dimms["portrait_y"][y_val - 1] + 2, f"{attack_range}", col)
             # SM Support Token Count
             pyxel.text(sm_visual_dimms["portrait_x"] + 24,
-                        sm_visual_dimms["portrait_y"][y_val - 1] + 2, f"{roster_dict['support_token']}", col)
+                        sm_visual_dimms["portrait_y"][y_val - 1] + 2, f"{roster_dict['support_tokens']}", col)
             # SM name 1
             pyxel.text(sm_visual_dimms["name_x"],
                        sm_visual_dimms["name_y"][y_val - 1], f"{sm_name[0]}", col)

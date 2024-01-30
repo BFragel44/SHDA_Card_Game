@@ -1,11 +1,19 @@
 import pyxel
 import ui
+import shda_marines as sm
 
 # Action types:
+# ----------------
+# ----------------
 # 1. SUPPORT CARD
 # ----------------
 #   a. [Gain a Support Token, to be placed on any Marine] + [Execute text of card]
 #   b. limited to a single Support Token per Team
+#   c. support card TEAM ABILITES:
+#       RED = AFTER EVENT PHASE Each time a Support Card is played, the Team gains a Support Token.
+#       GREEN = Each time GIDEON rolls SKULL while DEFENDING, attack misses.
+#       GREY = After Support Token resolved, pick swarm, they cannot attack or be killed this turn.
+# TODO - support card TEAM ABILITES need to be implemented/added
 
 # 2. MOVE + ACTIVATE CARD
 # ----------------
@@ -49,50 +57,90 @@ class ResolveActionUI():
         self.action_cards = iter(selected_action_cards)
         self.space_marines = space_marines
         self.location_and_spawns = location_and_spawns
+        self.click_phase = 0
         # self.roll_screen = RollScreen() # <- needs to be built
+        self.current_card = None
 
     def update(self):
-        if ui.box_click(0, 0, 255, 255):
-            # Get the next element of self.action_cards
-            try:
-                next_card = next(self.action_cards)
-            except StopIteration:
-                pass
-                # if no more elements in self.action_cards
-                # GENESTEALER ATTACK PHASE activation here
-            print(next_card)
-            self.action_card_funnel(next_card)
- 
-    def action_card_funnel(self, next_card):
-        card_info = self.selected_action_cards.get(next_card)
-        #  (3, 'support_card')
+        if self.click_phase == 0:
+            if ui.phase_box_click():
+                # Get the next element of self.action_cards
+                try:
+                    self.current_card = next(self.action_cards)
+                    self.click_phase = 1
+                except StopIteration:
+                    pass
+                    # if no more elements in self.action_cards
+                    # GENESTEALER ATTACK PHASE activation here       
+        elif self.click_phase == 1:
+            self.card_info = self.selected_action_cards.get(self.current_card)
+            #  (3, 'support_card')
+            if self.card_info[1] == 'support_card':
+                self.support_card(self.card_info[0])
 
-        if card_info[1] == 'support_card':
-            print('support card match!')
-            self.support_card(card_info[0])
+            elif self.card_info[1] == 'move_act_card':
+                self.move_card(self.card_info[0])
 
-        elif card_info[1] == 'move_act_card':
-            self.move_card(card_info[0])
+            elif self.card_info[1] == 'attack_card':
+                self.attack_card(self.card_info[0])
 
-        elif card_info[1] == 'attack_card':
-            self.attack_card(card_info[0])
-    
     def support_card(self, card_info):
-#   a. [Gain a Support Token, to be placed on any Marine] + [Execute text of card]
-#   b. limited to a single Support Token per Team
         for marines in self.space_marines.combat_teams:
             if marines['status'] == 'alive':
-                print(marines['sm_name'])
-                print(marines['formation_num'])
-                
-# support card TEAM ABILITES:
-#   RED = AFTER EVENT PHASE Each time a Support Card is played, the Team gains a Support Token.
-#   GREEN = Each time GIDEON rolls SKULL while DEFENDING, attack misses.
-#   GREY = After Support Token resolved, pick swarm, they cannot attack or be killed this turn.
-    
-    def support_card_draw(self, card_info):
-        pass
+                box_x = sm.sm_visual_dimms["card_border_x"]
+                box_y = sm.sm_visual_dimms["card_border_y"][marines['formation_num']-1]
+                box_w = sm.sm_visual_dimms["card_border_w"]
+                box_h = sm.sm_visual_dimms["card_border_h"]
+                # if box is clicked, add a support token to the marine
+                if ui.box_click(box_x, box_y, box_w, box_h):
+                    marines['support_tokens'] += 1
+                    self.click_phase = 0
+                else:
+                    continue
 
+    def support_card_draw(self):
+        for marines in self.space_marines.combat_teams:
+            if marines['status'] == 'alive':
+                pyxel.rectb(
+                sm.sm_visual_dimms["card_border_x"]-2,
+                sm.sm_visual_dimms["card_border_y"][marines['formation_num'] - 1]-2,
+                sm.sm_visual_dimms["card_border_w"]+4,
+                sm.sm_visual_dimms["card_border_h"]+4,
+                9)
 
+    def move_card(self, card_info):
+        self.click_phase = 2
+        for marines in self.space_marines.combat_teams:
+            print("marines['team_color'] = ", marines['team_color'])
+            print("card_info: ", card_info)
+            if marines['status'] == 'alive' and marines['team_color'] == card_info:
+                print("match!!!")
+                box_x = sm.sm_visual_dimms["card_border_x"]
+                box_y = sm.sm_visual_dimms["card_border_y"][marines['formation_num']-1]
+                box_w = sm.sm_visual_dimms["card_border_w"]
+                box_h = sm.sm_visual_dimms["card_border_h"]
+                # if box is clicked, add a support token to the marine
+                if ui.box_click(box_x, box_y, box_w, box_h):
+                    print("click phase 2")
+                    print(marines['sm_name'])
+                    self.click_phase = 0
+
+    def move_card_draw(self, card_info):
+        for marines in self.space_marines.combat_teams:
+            if marines['status'] == 'alive' and marines['team_color'] == card_info[0]:
+                pyxel.rectb(
+                sm.sm_visual_dimms["card_border_x"]-2,
+                sm.sm_visual_dimms["card_border_y"][marines['formation_num'] - 1]-2,
+                sm.sm_visual_dimms["card_border_w"]+4,
+                sm.sm_visual_dimms["card_border_h"]+4,
+                9)
+
+###                          ###
+### MAIN OVERLAY DRAW METHOD ###
+###                          ###
     def overlay_draw(self):
-        pass
+        if self.click_phase == 1:
+            self.support_card_draw()
+        
+        elif self.click_phase == 2:
+            self.move_card_draw(self.card_info)
