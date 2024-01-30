@@ -60,6 +60,7 @@ class ResolveActionUI():
         self.click_phase = 0
         # self.roll_screen = RollScreen() # <- needs to be built
         self.current_card = None
+        self.move_card = None
 
     def update(self):
         if self.click_phase == 0:
@@ -79,24 +80,25 @@ class ResolveActionUI():
                 self.support_card(self.card_info[0])
 
             elif self.card_info[1] == 'move_act_card':
-                self.move_card(self.card_info[0])
+                if not self.move_card:
+                    self.move_card = MovementCard(self.card_info[0], self.space_marines)
+                elif self.move_card:
+                    self.move_card.update()
 
             elif self.card_info[1] == 'attack_card':
                 self.attack_card(self.card_info[0])
 
-    def support_card(self, card_info):
-        for marines in self.space_marines.combat_teams:
-            if marines['status'] == 'alive':
+    def support_card(self, card_info): # TODO do I need card_info here?
+        for marine in self.space_marines.combat_teams:
+            if marine['status'] == 'alive':
                 box_x = sm.sm_visual_dimms["card_border_x"]
-                box_y = sm.sm_visual_dimms["card_border_y"][marines['formation_num']-1]
+                box_y = sm.sm_visual_dimms["card_border_y"][marine['formation_num']-1]
                 box_w = sm.sm_visual_dimms["card_border_w"]
                 box_h = sm.sm_visual_dimms["card_border_h"]
                 # if box is clicked, add a support token to the marine
                 if ui.box_click(box_x, box_y, box_w, box_h):
-                    marines['support_tokens'] += 1
+                    marine['support_tokens'] += 1
                     self.click_phase = 0
-                else:
-                    continue
 
     def support_card_draw(self):
         for marines in self.space_marines.combat_teams:
@@ -108,39 +110,111 @@ class ResolveActionUI():
                 sm.sm_visual_dimms["card_border_h"]+4,
                 9)
 
-    def move_card(self, card_info):
-        self.click_phase = 2
-        for marines in self.space_marines.combat_teams:
-            print("marines['team_color'] = ", marines['team_color'])
-            print("card_info: ", card_info)
-            if marines['status'] == 'alive' and marines['team_color'] == card_info:
-                print("match!!!")
-                box_x = sm.sm_visual_dimms["card_border_x"]
-                box_y = sm.sm_visual_dimms["card_border_y"][marines['formation_num']-1]
-                box_w = sm.sm_visual_dimms["card_border_w"]
-                box_h = sm.sm_visual_dimms["card_border_h"]
-                # if box is clicked, add a support token to the marine
-                if ui.box_click(box_x, box_y, box_w, box_h):
-                    print("click phase 2")
-                    print(marines['sm_name'])
-                    self.click_phase = 0
-
-    def move_card_draw(self, card_info):
-        for marines in self.space_marines.combat_teams:
-            if marines['status'] == 'alive' and marines['team_color'] == card_info[0]:
-                pyxel.rectb(
-                sm.sm_visual_dimms["card_border_x"]-2,
-                sm.sm_visual_dimms["card_border_y"][marines['formation_num'] - 1]-2,
-                sm.sm_visual_dimms["card_border_w"]+4,
-                sm.sm_visual_dimms["card_border_h"]+4,
-                9)
 
 ###                          ###
 ### MAIN OVERLAY DRAW METHOD ###
 ###                          ###
     def overlay_draw(self):
-        if self.click_phase == 1:
+        if self.click_phase == 1 and not self.move_card:
             self.support_card_draw()
-        
-        elif self.click_phase == 2:
-            self.move_card_draw(self.card_info)
+        elif self.click_phase == 1 and self.move_card:
+            self.move_card.draw()
+
+
+###                          ###
+###    MOVEMENT CLASS WIP    ###
+###                          ###
+class MovementCard():
+    def __init__(self, card_info, space_marines):
+        self.space_marines = space_marines
+        self.card_info = card_info
+        self.movement_phase = 1
+        self.movement_team = []
+        self.move_click = 0
+        self.selected_move = None
+
+    def available_moves_update(self, card_info):
+        print(self.move_click)
+        for marine in self.space_marines.combat_teams:
+            if marine['status'] == 'alive' and marine['team_color'] == card_info:
+                box_x = sm.sm_visual_dimms["card_border_x"]
+                box_y = sm.sm_visual_dimms["card_border_y"][marine['formation_num']-1]
+                box_w = sm.sm_visual_dimms["card_border_w"]
+                box_h = sm.sm_visual_dimms["card_border_h"]
+                if marine['formation_num'] not in self.movement_team:
+                    self.movement_team.append(marine['formation_num'])
+                # if box is clicked, move to the next MOVEMENT PHASE w/ the selected marine
+                if self.movement_team:
+                    if ui.box_click(box_x, box_y, box_w, box_h):
+                        self.selected_move = marine['formation_num']
+                        self.move_click = 1
+
+    def move_selection_update(self):
+        pass
+
+
+    def available_moves_draw(self, card_info):
+        for marine in self.space_marines.combat_teams:
+            if marine['status'] == 'alive' and marine['team_color'] == card_info:
+                pyxel.rectb(
+                sm.sm_visual_dimms["card_border_x"]-2,
+                sm.sm_visual_dimms["card_border_y"][marine['formation_num'] - 1]-2,
+                sm.sm_visual_dimms["card_border_w"]+4,
+                sm.sm_visual_dimms["card_border_h"]+4,
+                9)
+    
+    def move_selection_draw(self):
+        for marine in self.space_marines.combat_teams:
+            if marine['status'] == 'alive' and marine['formation_num'] == self.selected_move:
+                pyxel.rectb(
+                sm.sm_visual_dimms["card_border_x"]-2,
+                sm.sm_visual_dimms["card_border_y"][self.selected_move - 1]-2,
+                sm.sm_visual_dimms["card_border_w"]+4,
+                sm.sm_visual_dimms["card_border_h"]+4,
+                9)
+                # check if the marine is at the top or bottom 
+                # of the formation for move up and down options
+                # UP LIMIT CHECK:
+                if self.selected_move-1 > 0:
+                    # click-box on top of selected marine's portrait for "up" move:
+                    pyxel.rect(
+                    sm.sm_visual_dimms["card_border_x"],
+                    sm.sm_visual_dimms["card_border_y"][self.selected_move-1],
+                    sm.sm_visual_dimms["card_border_w"],
+                    sm.sm_visual_dimms["card_border_h"]-22,
+                    8) # 8 = RED, 9 = ORANGE
+                # Highlight the box above the selected marine:
+                # INSERT CODE HERE...
+                # DOWN LIMIT CHECK:
+                if self.selected_move-1 < 5:
+                    # click-box on bottom of selected marine's portrait for "down" move:
+                    pyxel.rect(
+                    sm.sm_visual_dimms["card_border_x"],
+                    sm.sm_visual_dimms["card_border_y"][self.selected_move-1],
+                    sm.sm_visual_dimms["card_border_w"]+4,
+                    sm.sm_visual_dimms["card_border_h"]+4,
+                    9)
+                # Highlight the box below the selected marine:
+                # INSERT CODE HERE...
+                    
+                    
+                
+
+###
+###  MovementCard MAIN Class Methods  
+###
+    def update(self):
+        if self.move_click == 0:
+            self.available_moves_update(self.card_info)
+        elif self.move_click == 1:
+                self.move_selection_update()
+
+
+    def draw(self):
+        if self.move_click == 0:
+            self.available_moves_draw(self.card_info)
+        elif self.move_click == 1:
+            self.move_selection_draw()
+
+# self.click_phase = 0 hold off on this until the whole team's movement
+#   action is resolved.
