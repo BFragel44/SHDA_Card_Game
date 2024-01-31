@@ -108,9 +108,11 @@ class Space_marines:
     def __init__(self):
         # LIST of DICTS
         self.combat_teams = shuffle_deck(combat_teams)
+        self.test = 0
 
-    def update(self):
+    def formation_update(self):
         pass
+
 
     def formation_draw(self):
         """

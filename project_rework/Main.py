@@ -120,7 +120,6 @@ class ResolveActionState(GameState):
     def update(self, game):
         self.action_overlay.update()
 
-
     def draw(self, game):
         pyxel.cls(0)
         pyxel.text(101, 8, "Resolve Action", 7) 

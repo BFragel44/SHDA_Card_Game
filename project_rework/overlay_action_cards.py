@@ -109,8 +109,6 @@ class ResolveActionUI():
                 sm.sm_visual_dimms["card_border_w"]+4,
                 sm.sm_visual_dimms["card_border_h"]+4,
                 9)
-
-
 ###                          ###
 ### MAIN OVERLAY DRAW METHOD ###
 ###                          ###
@@ -132,9 +130,10 @@ class MovementCard():
         self.movement_team = []
         self.move_click = 0
         self.selected_move = None
-
+        self.up_move = None
+        self.down_move = None
+# UPDATE METHODS---
     def available_moves_update(self, card_info):
-        print(self.move_click)
         for marine in self.space_marines.combat_teams:
             if marine['status'] == 'alive' and marine['team_color'] == card_info:
                 box_x = sm.sm_visual_dimms["card_border_x"]
@@ -150,10 +149,52 @@ class MovementCard():
                         self.move_click = 1
 
     def move_selection_update(self):
+        print("stay test")
+        if self.up_move:
+            if ui.box_click(self.up_move[0], 
+                            self.up_move[1], 
+                            self.up_move[2], 
+                            self.up_move[3]):
+                print("place move(up) method here move type should be -1")
+                self.move_action("up", self.up_move[4])
+                pyxel.flip()
+        if self.down_move:
+            if ui.box_click(self.down_move[0], 
+                            self.down_move[1], 
+                            self.down_move[2], 
+                            self.down_move[3]):
+                print("place move(down) method here move type should be 1")
+                self.move_action("down", self.down_move[4])
+                pyxel.flip()
+
+    def move_action(self, move_type, formation_num):
+        # move_dir = 0
+        if move_type == "up":
+            move_dir = -1
+        elif move_type == "down":
+            move_dir = 1
+        # get the selected marine's formation number
+        for marine in self.space_marines.combat_teams:
+            if marine['formation_num'] == formation_num:
+                print("selected marine:", marine['formation_num'])
+                print(formation_num)
+                # selected marine:
+                marine.update({'formation_num': formation_num + move_dir})
+                print(marine)
+                # adjacent marine above/below the selected marine:
+                if marine['formation_num'] == formation_num + move_dir:
+                    marine['formation_num'] = formation_num
+
+            # get the marine above the selected marine
+            # swap the selected marine with the marine above
+            pass
+        # get the marine above/below the selected marine based on move_type
+        # swap the selected marine with the marine above/below
         pass
 
-
+# DRAW METHODS---
     def available_moves_draw(self, card_info):
+        sm.Space_marines.formation_draw(self.space_marines)
         for marine in self.space_marines.combat_teams:
             if marine['status'] == 'alive' and marine['team_color'] == card_info:
                 pyxel.rectb(
@@ -165,6 +206,7 @@ class MovementCard():
     
     def move_selection_draw(self):
         for marine in self.space_marines.combat_teams:
+            # selected marine card is highlighted:
             if marine['status'] == 'alive' and marine['formation_num'] == self.selected_move:
                 pyxel.rectb(
                 sm.sm_visual_dimms["card_border_x"]-2,
@@ -173,32 +215,50 @@ class MovementCard():
                 sm.sm_visual_dimms["card_border_h"]+4,
                 9)
                 # check if the marine is at the top or bottom 
-                # of the formation for move up and down options
+                # of formation for move up/down options
                 # UP LIMIT CHECK:
                 if self.selected_move-1 > 0:
+                    # sets up the click-box for the "up" move:
+                    self.up_move = [
+                        sm.sm_visual_dimms["card_border_x"],
+                        sm.sm_visual_dimms["card_border_y"][self.selected_move-1],
+                        sm.sm_visual_dimms["card_border_w"],
+                        sm.sm_visual_dimms["card_border_h"]-22,
+                        marine['formation_num']] # last value is the formation number
                     # click-box on top of selected marine's portrait for "up" move:
-                    pyxel.rect(
-                    sm.sm_visual_dimms["card_border_x"],
-                    sm.sm_visual_dimms["card_border_y"][self.selected_move-1],
-                    sm.sm_visual_dimms["card_border_w"],
-                    sm.sm_visual_dimms["card_border_h"]-22,
-                    8) # 8 = RED, 9 = ORANGE
-                # Highlight the box above the selected marine:
-                # INSERT CODE HERE...
-                # DOWN LIMIT CHECK:
-                if self.selected_move-1 < 5:
-                    # click-box on bottom of selected marine's portrait for "down" move:
-                    pyxel.rect(
-                    sm.sm_visual_dimms["card_border_x"],
-                    sm.sm_visual_dimms["card_border_y"][self.selected_move-1],
+                    pyxel.rectb(self.up_move[0], self.up_move[1],
+                                self.up_move[2], self.up_move[3], 8)
+                # Highlight the formation place above the selected marine:
+                    pyxel.rectb(
+                    sm.sm_visual_dimms["card_border_x"]-2,
+                    sm.sm_visual_dimms["card_border_y"][self.selected_move-2]-2,
                     sm.sm_visual_dimms["card_border_w"]+4,
                     sm.sm_visual_dimms["card_border_h"]+4,
-                    9)
-                # Highlight the box below the selected marine:
-                # INSERT CODE HERE...
-                    
-                    
-                
+                    13)
+                # DOWN LIMIT CHECK:
+                if self.selected_move-1 < 5:
+                    # sets up the click-box for the "down" move:
+                    self.down_move = [
+                        sm.sm_visual_dimms["card_border_x"],
+                        sm.sm_visual_dimms["card_border_y"][self.selected_move-1]+22,
+                        sm.sm_visual_dimms["card_border_w"],
+                        sm.sm_visual_dimms["card_border_h"]-22,
+                        marine['formation_num']] # last value is the formation number
+                    # click-box on bottom of selected marine's portrait for "down" move:
+                    pyxel.rectb(self.down_move[0], self.down_move[1], 
+                                self.down_move[2], self.down_move[3], 8)
+
+                # Highlight the formation place below the selected marine:
+                    pyxel.rectb(
+                    sm.sm_visual_dimms["card_border_x"]-2,
+                    sm.sm_visual_dimms["card_border_y"][self.selected_move]-2,
+                    sm.sm_visual_dimms["card_border_w"]+4,
+                    sm.sm_visual_dimms["card_border_h"]+4,
+                    13)
+# card_border_x = 96 40 65 33
+# card_border_y = [40, 65, 90, 115, 140, 165]
+# card_border_w = 65
+# card_border_h = 25                    
 
 ###
 ###  MovementCard MAIN Class Methods  
@@ -208,7 +268,6 @@ class MovementCard():
             self.available_moves_update(self.card_info)
         elif self.move_click == 1:
                 self.move_selection_update()
-
 
     def draw(self):
         if self.move_click == 0:
