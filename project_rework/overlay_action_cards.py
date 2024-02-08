@@ -81,7 +81,7 @@ class ResolveActionUI():
 
             elif self.card_info[1] == 'move_act_card':
                 if not self.move_card:
-                    self.move_card = MovementCard(self.card_info[0], self.space_marines)
+                    self.move_card = MovementCard(self.card_info[0], self.space_marines, self.location_and_spawns.room_terrain)
                 elif self.move_card:
                     self.move_card.update()
 
@@ -118,13 +118,14 @@ class ResolveActionUI():
         elif self.click_phase == 1 and self.move_card:
             self.move_card.draw()
 
-
+# class Location_and_spawns.room_terrain = 4 locations
 ###                          ###
 ###    MOVEMENT CLASS WIP    ###
 ###                          ###
 class MovementCard():
-    def __init__(self, card_info, space_marines):
+    def __init__(self, card_info, space_marines, terrain_locations):
         self.space_marines = space_marines
+        self.terrain_locations = terrain_locations
         self.card_info = card_info
         self.movement_phase = 1
         self.movement_team = []
@@ -132,7 +133,17 @@ class MovementCard():
         self.selected_move = None
         self.up_move = None
         self.down_move = None
-# UPDATE METHODS---
+        self.move_used = []
+        self.activatable_terrain = None
+        self.terrain_side = None
+
+    # UPDATE METHODS---
+    def reset_selection(self):
+        self.movement_team = []
+        self.move_used = []
+        for marine in self.space_marines.combat_teams:
+            marine['selected'] = False
+
     def available_moves_update(self, card_info):
         for marine in self.space_marines.combat_teams:
             if marine['status'] == 'alive' and marine['team_color'] == card_info:
@@ -140,61 +151,145 @@ class MovementCard():
                 box_y = sm.sm_visual_dimms["card_border_y"][marine['formation_num']-1]
                 box_w = sm.sm_visual_dimms["card_border_w"]
                 box_h = sm.sm_visual_dimms["card_border_h"]
-                if marine['formation_num'] not in self.movement_team:
+                if not marine.get('selected', False):
                     self.movement_team.append(marine['formation_num'])
+                    # Mark marine as selected:
+                    marine['selected'] = True
                 # if box is clicked, move to the next MOVEMENT PHASE w/ the selected marine
-                if self.movement_team:
-                    if ui.box_click(box_x, box_y, box_w, box_h):
-                        self.selected_move = marine['formation_num']
-                        self.move_click = 1
+                if marine['formation_num'] in self.movement_team and ui.box_click(box_x, box_y, box_w, box_h):
+                    self.selected_move = marine['formation_num']
+                    self.move_click = 1
+    
+    def skip_button_update(self):
+        if ui.box_click(220, 4, 30, 10):
+            if self.move_click == 0:
+                self.move_click = 2
+            elif self.move_click == 2:
+                self.move_click = 4
+            elif self.move_click == 4:
+                print("self.move_click = 4")
+            self.reset_selection()
+
+    def skip_button_draw(self):
+        pyxel.rectb(220, 4, 30, 10, 7)
+        pyxel.text(225, 6, "SKIP", 7)
 
     def move_selection_update(self):
-        print("stay test")
         if self.up_move:
             if ui.box_click(self.up_move[0], 
                             self.up_move[1], 
                             self.up_move[2], 
                             self.up_move[3]):
-                print("place move(up) method here move type should be -1")
                 self.move_action("up", self.up_move[4])
-                pyxel.flip()
+
         if self.down_move:
             if ui.box_click(self.down_move[0], 
                             self.down_move[1], 
                             self.down_move[2], 
                             self.down_move[3]):
-                print("place move(down) method here move type should be 1")
                 self.move_action("down", self.down_move[4])
-                pyxel.flip()
+
 
     def move_action(self, move_type, formation_num):
-        # move_dir = 0
         if move_type == "up":
             move_dir = -1
         elif move_type == "down":
             move_dir = 1
         # get the selected marine's formation number
+        move_value = formation_num + move_dir
+        selected_marine = None
+        next_marine = None
         for marine in self.space_marines.combat_teams:
             if marine['formation_num'] == formation_num:
-                print("selected marine:", marine['formation_num'])
-                print(formation_num)
-                # selected marine:
-                marine.update({'formation_num': formation_num + move_dir})
-                print(marine)
-                # adjacent marine above/below the selected marine:
-                if marine['formation_num'] == formation_num + move_dir:
-                    marine['formation_num'] = formation_num
+                selected_marine = marine
+            elif marine['formation_num'] == move_value:
+                next_marine = marine
+        if selected_marine and next_marine:
+            # Swap formation numbers
+            selected_marine['formation_num'], next_marine['formation_num'] = next_marine['formation_num'], selected_marine['formation_num']
+            # add clicked marine to the move_used list
+            remove_index = self.movement_team.index(self.selected_move)
+            remove_choice = self.movement_team.pop(remove_index)
+            self.move_used.append(remove_choice)
+            # reset the move_click to 0
+            self.move_click = 0
+        # sends update and draw into the "change facing" phase
+        if len(self.move_used) == 2:
+            self.move_click = 2
+            self.reset_selection()
 
-            # get the marine above the selected marine
-            # swap the selected marine with the marine above
-            pass
-        # get the marine above/below the selected marine based on move_type
-        # swap the selected marine with the marine above/below
-        pass
+    def available_flip_update(self, card_info):
+        for marine in self.space_marines.combat_teams:
+            if marine['status'] == 'alive' and marine['team_color'] == card_info:
+                box_x = sm.sm_visual_dimms["card_border_x"]
+                box_y = sm.sm_visual_dimms["card_border_y"][marine['formation_num']-1]
+                box_w = sm.sm_visual_dimms["card_border_w"]
+                box_h = sm.sm_visual_dimms["card_border_h"]
+                if not marine.get('selected', False):
+                    self.movement_team.append(marine['formation_num'])
+                    # Mark marine as selected:
+                    marine['selected'] = True
+                # if box is clicked, move to the next MOVEMENT PHASE w/ the selected marine
+                if marine['formation_num'] in self.movement_team and ui.box_click(box_x, box_y, box_w, box_h):
+                    self.selected_move = marine['formation_num']
+                    self.move_click = 3
+                    print("self.selected_move = ", self.selected_move)
+    
+    def flip_selection_update(self):
+        self.space_marines.flip_facing(self.selected_move)
+        remove_index = self.movement_team.index(self.selected_move)
+        remove_choice = self.movement_team.pop(remove_index)
+        self.move_used.append(remove_choice)
+        if len(self.move_used) == 2:
+            self.move_click = 4
+            self.reset_selection()
+        else:
+            self.move_click = 2
+
+    def available_activate_update(self, card_info):
+        print("self.terrain_locations = ", self.terrain_locations)
+        print(self.terrain_side)
+        for terrain in self.terrain_locations:
+            # 1. check if the terrain is door or control_panel
+            if terrain[0] == 'door' or terrain[0] == 'control_panel':
+                print("terrain = ", terrain)
+                self.activatable_terrain = terrain
+                terrain_index = self.terrain_locations.index(terrain)
+                # 2. check if the terrain is on the left or right side of the room
+                if terrain_index == 0 or terrain_index == 1:
+                    print("left side")
+                    self.terrain_side = "LEFT"
+                elif terrain_index == 2 or terrain_index == 3:
+                    print("right side")
+                    self.terrain_side = "RIGHT"
+                    terrain_index = 6 - terrain_index
+        # 3. check if the selected marine is facing the terrain
+        for marine in self.space_marines.combat_teams:
+            if marine['facing'] == self.terrain_side and marine['team_color'] == card_info:
+                print("facing match")
+                print("terrain_index = ", terrain_index)
+                print("marine['formation_num'] = ", marine['formation_num'])
+                if marine['formation_num']-1 == terrain_index:
+                    if marine['support_tokens'] > 0:
+                        print("TOKENS + MATCH")
+                        box_x = sm.sm_visual_dimms["card_border_x"]
+                        box_y = sm.sm_visual_dimms["card_border_y"][marine['formation_num']-1]
+                        box_w = sm.sm_visual_dimms["card_border_w"]
+                        box_h = sm.sm_visual_dimms["card_border_h"]
+                        if marine['selected'] != False:
+                            self.movement_team.append(marine['formation_num'])
+                            # Mark marine as selected:
+                            marine['selected'] = True
+                        # if box is clicked, move to the next MOVEMENT PHASE w/ the selected marine
+                        if ui.box_click(box_x, box_y, box_w, box_h):
+                            self.selected_move = marine['formation_num']
+                            # self.move_click = 3
+                            print("self.selected_move = ", self.selected_move)
+                            print("activation action ACTIVATED HERE")
+        
 
 # DRAW METHODS---
     def available_moves_draw(self, card_info):
-        sm.Space_marines.formation_draw(self.space_marines)
         for marine in self.space_marines.combat_teams:
             if marine['status'] == 'alive' and marine['team_color'] == card_info:
                 pyxel.rectb(
@@ -247,14 +342,26 @@ class MovementCard():
                     # click-box on bottom of selected marine's portrait for "down" move:
                     pyxel.rectb(self.down_move[0], self.down_move[1], 
                                 self.down_move[2], self.down_move[3], 8)
-
                 # Highlight the formation place below the selected marine:
                     pyxel.rectb(
+                        sm.sm_visual_dimms["card_border_x"]-2,
+                        sm.sm_visual_dimms["card_border_y"][self.selected_move]-2,
+                        sm.sm_visual_dimms["card_border_w"]+4,
+                        sm.sm_visual_dimms["card_border_h"]+4,
+                        13)
+
+
+    def available_flips_draw(self, card_info):
+        for marine in self.space_marines.combat_teams:
+            if marine['status'] == 'alive' and marine['team_color'] == card_info:
+                if marine['formation_num'] in self.movement_team:
+                    pyxel.rectb(
                     sm.sm_visual_dimms["card_border_x"]-2,
-                    sm.sm_visual_dimms["card_border_y"][self.selected_move]-2,
+                    sm.sm_visual_dimms["card_border_y"][marine['formation_num'] - 1]-2,
                     sm.sm_visual_dimms["card_border_w"]+4,
                     sm.sm_visual_dimms["card_border_h"]+4,
-                    13)
+                    9)
+
 # card_border_x = 96 40 65 33
 # card_border_y = [40, 65, 90, 115, 140, 165]
 # card_border_w = 65
@@ -264,16 +371,34 @@ class MovementCard():
 ###  MovementCard MAIN Class Methods  
 ###
     def update(self):
+        self.skip_button_update()
+        print("self.move_click = ", self.move_click)
+        print("self.movement_team = ", self.movement_team)
+        print("self.move_used = ", self.move_used)
         if self.move_click == 0:
             self.available_moves_update(self.card_info)
         elif self.move_click == 1:
-                self.move_selection_update()
+            self.move_selection_update()
+        elif self.move_click == 2:
+            self.available_flip_update(self.card_info)
+        elif self.move_click == 3:
+            self.flip_selection_update()
+        elif self.move_click == 4:
+            self.available_activate_update(self.card_info)
+
 
     def draw(self):
+        self.skip_button_draw()
         if self.move_click == 0:
             self.available_moves_draw(self.card_info)
         elif self.move_click == 1:
             self.move_selection_draw()
+        elif self.move_click == 2 or self.move_click == 3:
+            self.available_flips_draw(self.card_info)
+        elif self.move_click == 4:
+            pass
+            
+            
 
 # self.click_phase = 0 hold off on this until the whole team's movement
 #   action is resolved.

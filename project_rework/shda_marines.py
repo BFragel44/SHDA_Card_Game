@@ -108,11 +108,11 @@ class Space_marines:
     def __init__(self):
         # LIST of DICTS
         self.combat_teams = shuffle_deck(combat_teams)
-        self.test = 0
 
-    def formation_update(self):
-        pass
-
+    def flip_facing(self, formation_num):
+        for marine in self.combat_teams:
+            if marine['formation_num'] == formation_num:
+                marine['facing'] = 'RIGHT' if marine['facing'] == 'LEFT' else 'LEFT'
 
     def formation_draw(self):
         """
