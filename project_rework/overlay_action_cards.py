@@ -23,6 +23,7 @@ import shda_marines as sm
 #   c. ACTIVATE TERRAIN FACING A TEAM MEMBER
 #       - Resolve facing Terrain's "Activate" text).
 #       - a Terrain Card cannot be activated more than once per round.
+# TODO - build and implement TERRAIN ACTIVATION for this card type
 
 # 3. ATTACK CARDS
 # ----------------
@@ -58,9 +59,10 @@ class ResolveActionUI():
         self.space_marines = space_marines
         self.location_and_spawns = location_and_spawns
         self.click_phase = 0
-        # self.roll_screen = RollScreen() # <- needs to be built
         self.current_card = None
         self.move_card = None
+        self.attack_card = None
+        self.current_card_type = None
 
     def update(self):
         if self.click_phase == 0:
@@ -77,16 +79,28 @@ class ResolveActionUI():
             self.card_info = self.selected_action_cards.get(self.current_card)
             #  (3, 'support_card')
             if self.card_info[1] == 'support_card':
+                self.current_card_type = 'sc'
                 self.support_card(self.card_info[0])
 
             elif self.card_info[1] == 'move_act_card':
                 if not self.move_card:
-                    self.move_card = MovementCard(self.card_info[0], self.space_marines, self.location_and_spawns.room_terrain)
+                    self.move_card = MovementCard(self.card_info[0], self.space_marines, 
+                                                  self.location_and_spawns.room_terrain)
                 elif self.move_card:
+                    self.current_card_type = 'mc'
                     self.move_card.update()
-
+                    if self.move_card.card_resolved:
+                        self.click_phase = 0
+                        self.move_card = None
+            
             elif self.card_info[1] == 'attack_card':
-                self.attack_card(self.card_info[0])
+                if not self.attack_card:
+                    self.attack_card = AttackCard(self.card_info[0], self.space_marines, 
+                                                  self.location_and_spawns.spawned_left_swarms,
+                                                  self.location_and_spawns.spawned_right_swarms)
+                elif self.attack_card:
+                    self.current_card_type = 'ac'
+                    self.attack_card.update()
 
     def support_card(self, card_info): # TODO do I need card_info here?
         for marine in self.space_marines.combat_teams:
@@ -113,14 +127,18 @@ class ResolveActionUI():
 ### MAIN OVERLAY DRAW METHOD ###
 ###                          ###
     def overlay_draw(self):
-        if self.click_phase == 1 and not self.move_card:
+        if self.click_phase == 1 and self.current_card_type == 'sc':
+            print("SUPPORT CARD DRAW")
             self.support_card_draw()
-        elif self.click_phase == 1 and self.move_card:
+        elif self.click_phase == 1 and self.current_card_type == 'mc':
+            print("MOVE CARD DRAW")
             self.move_card.draw()
+        elif self.click_phase == 1 and self.current_card_type == 'ac':
+            print("ATTACK CARD DRAW")
+            self.attack_card.draw()
 
-# class Location_and_spawns.room_terrain = 4 locations
 ###                          ###
-###    MOVEMENT CLASS WIP    ###
+###    MOVEMENT CLASS        ###
 ###                          ###
 class MovementCard():
     def __init__(self, card_info, space_marines, terrain_locations):
@@ -136,6 +154,7 @@ class MovementCard():
         self.move_used = []
         self.activatable_terrain = None
         self.terrain_side = None
+        self.card_resolved = False
 
     # UPDATE METHODS---
     def reset_selection(self):
@@ -271,6 +290,7 @@ class MovementCard():
                 print("marine['formation_num'] = ", marine['formation_num'])
                 if marine['formation_num']-1 == terrain_index:
                     if marine['support_tokens'] > 0:
+                        # will need to add the activation function/method here
                         print("TOKENS + MATCH")
                         box_x = sm.sm_visual_dimms["card_border_x"]
                         box_y = sm.sm_visual_dimms["card_border_y"][marine['formation_num']-1]
@@ -283,9 +303,11 @@ class MovementCard():
                         # if box is clicked, move to the next MOVEMENT PHASE w/ the selected marine
                         if ui.box_click(box_x, box_y, box_w, box_h):
                             self.selected_move = marine['formation_num']
-                            # self.move_click = 3
+                            self.move_click = 5
                             print("self.selected_move = ", self.selected_move)
                             print("activation action ACTIVATED HERE")
+        else:
+            self.move_click = 5
         
 
 # DRAW METHODS---
@@ -372,9 +394,6 @@ class MovementCard():
 ###
     def update(self):
         self.skip_button_update()
-        print("self.move_click = ", self.move_click)
-        print("self.movement_team = ", self.movement_team)
-        print("self.move_used = ", self.move_used)
         if self.move_click == 0:
             self.available_moves_update(self.card_info)
         elif self.move_click == 1:
@@ -385,6 +404,10 @@ class MovementCard():
             self.flip_selection_update()
         elif self.move_click == 4:
             self.available_activate_update(self.card_info)
+        elif self.move_click == 5:
+            self.card_resolved = True
+        elif self.move_click == 6:
+            pass
 
 
     def draw(self):
@@ -395,10 +418,26 @@ class MovementCard():
             self.move_selection_draw()
         elif self.move_click == 2 or self.move_click == 3:
             self.available_flips_draw(self.card_info)
-        elif self.move_click == 4:
+        # elif self.move_click == 4:
+        elif self.move_click == 6:
             pass
-            
-            
 
-# self.click_phase = 0 hold off on this until the whole team's movement
-#   action is resolved.
+        
+            
+class AttackCard():
+    def __init__(self, card_info, space_marines, left_gs, right_gs):
+        self.left_gs = left_gs
+        self.right_gs = right_gs
+
+    def available_tgt_update(self):
+        pass
+    
+    ###                               ###
+    ### MAIN AttackCard Class Methods ###
+    ###                               ###
+    def update(self):
+        print("ATTACK CARD UPDATE")
+    
+    def draw(self):
+        print("ATTACK CARD DRAW")
+
