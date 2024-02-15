@@ -24,6 +24,7 @@ import shda_marines as sm
 #       - Resolve facing Terrain's "Activate" text).
 #       - a Terrain Card cannot be activated more than once per round.
 # TODO - build and implement TERRAIN ACTIVATION for this card type
+# TODO - FIX: this card sometimes breaks when skipping certain parts of it.
 
 # 3. ATTACK CARDS
 # ----------------
@@ -106,7 +107,7 @@ class ResolveActionUI():
         for marine in self.space_marines.combat_teams:
             if marine['status'] == 'alive':
                 box_x = sm.sm_visual_dimms["card_border_x"]
-                box_y = sm.sm_visual_dimms["card_border_y"][marine['formation_num']-1]
+                box_y = sm.sm_visual_dimms["card_border_y"][marine['formation_num']]
                 box_w = sm.sm_visual_dimms["card_border_w"]
                 box_h = sm.sm_visual_dimms["card_border_h"]
                 # if box is clicked, add a support token to the marine
@@ -119,7 +120,7 @@ class ResolveActionUI():
             if marines['status'] == 'alive':
                 pyxel.rectb(
                 sm.sm_visual_dimms["card_border_x"]-2,
-                sm.sm_visual_dimms["card_border_y"][marines['formation_num'] - 1]-2,
+                sm.sm_visual_dimms["card_border_y"][marines['formation_num']]-2,
                 sm.sm_visual_dimms["card_border_w"]+4,
                 sm.sm_visual_dimms["card_border_h"]+4,
                 9)
@@ -128,13 +129,10 @@ class ResolveActionUI():
 ###                          ###
     def overlay_draw(self):
         if self.click_phase == 1 and self.current_card_type == 'sc':
-            print("SUPPORT CARD DRAW")
             self.support_card_draw()
         elif self.click_phase == 1 and self.current_card_type == 'mc':
-            print("MOVE CARD DRAW")
             self.move_card.draw()
         elif self.click_phase == 1 and self.current_card_type == 'ac':
-            print("ATTACK CARD DRAW")
             self.attack_card.draw()
 
 ###                          ###
@@ -167,7 +165,7 @@ class MovementCard():
         for marine in self.space_marines.combat_teams:
             if marine['status'] == 'alive' and marine['team_color'] == card_info:
                 box_x = sm.sm_visual_dimms["card_border_x"]
-                box_y = sm.sm_visual_dimms["card_border_y"][marine['formation_num']-1]
+                box_y = sm.sm_visual_dimms["card_border_y"][marine['formation_num']]
                 box_w = sm.sm_visual_dimms["card_border_w"]
                 box_h = sm.sm_visual_dimms["card_border_h"]
                 if not marine.get('selected', False):
@@ -241,7 +239,7 @@ class MovementCard():
         for marine in self.space_marines.combat_teams:
             if marine['status'] == 'alive' and marine['team_color'] == card_info:
                 box_x = sm.sm_visual_dimms["card_border_x"]
-                box_y = sm.sm_visual_dimms["card_border_y"][marine['formation_num']-1]
+                box_y = sm.sm_visual_dimms["card_border_y"][marine['formation_num']]
                 box_w = sm.sm_visual_dimms["card_border_w"]
                 box_h = sm.sm_visual_dimms["card_border_h"]
                 if not marine.get('selected', False):
@@ -288,12 +286,12 @@ class MovementCard():
                 print("facing match")
                 print("terrain_index = ", terrain_index)
                 print("marine['formation_num'] = ", marine['formation_num'])
-                if marine['formation_num']-1 == terrain_index:
+                if marine['formation_num'] == terrain_index:
                     if marine['support_tokens'] > 0:
                         # will need to add the activation function/method here
                         print("TOKENS + MATCH")
                         box_x = sm.sm_visual_dimms["card_border_x"]
-                        box_y = sm.sm_visual_dimms["card_border_y"][marine['formation_num']-1]
+                        box_y = sm.sm_visual_dimms["card_border_y"][marine['formation_num']]
                         box_w = sm.sm_visual_dimms["card_border_w"]
                         box_h = sm.sm_visual_dimms["card_border_h"]
                         if marine['selected'] != False:
@@ -316,7 +314,7 @@ class MovementCard():
             if marine['status'] == 'alive' and marine['team_color'] == card_info:
                 pyxel.rectb(
                 sm.sm_visual_dimms["card_border_x"]-2,
-                sm.sm_visual_dimms["card_border_y"][marine['formation_num'] - 1]-2,
+                sm.sm_visual_dimms["card_border_y"][marine['formation_num']]-2,
                 sm.sm_visual_dimms["card_border_w"]+4,
                 sm.sm_visual_dimms["card_border_h"]+4,
                 9)
@@ -327,7 +325,7 @@ class MovementCard():
             if marine['status'] == 'alive' and marine['formation_num'] == self.selected_move:
                 pyxel.rectb(
                 sm.sm_visual_dimms["card_border_x"]-2,
-                sm.sm_visual_dimms["card_border_y"][self.selected_move - 1]-2,
+                sm.sm_visual_dimms["card_border_y"][self.selected_move]-2,
                 sm.sm_visual_dimms["card_border_w"]+4,
                 sm.sm_visual_dimms["card_border_h"]+4,
                 9)
@@ -338,7 +336,7 @@ class MovementCard():
                     # sets up the click-box for the "up" move:
                     self.up_move = [
                         sm.sm_visual_dimms["card_border_x"],
-                        sm.sm_visual_dimms["card_border_y"][self.selected_move-1],
+                        sm.sm_visual_dimms["card_border_y"][self.selected_move],
                         sm.sm_visual_dimms["card_border_w"],
                         sm.sm_visual_dimms["card_border_h"]-22,
                         marine['formation_num']] # last value is the formation number
@@ -357,7 +355,7 @@ class MovementCard():
                     # sets up the click-box for the "down" move:
                     self.down_move = [
                         sm.sm_visual_dimms["card_border_x"],
-                        sm.sm_visual_dimms["card_border_y"][self.selected_move-1]+22,
+                        sm.sm_visual_dimms["card_border_y"][self.selected_move]+22,
                         sm.sm_visual_dimms["card_border_w"],
                         sm.sm_visual_dimms["card_border_h"]-22,
                         marine['formation_num']] # last value is the formation number
@@ -379,7 +377,7 @@ class MovementCard():
                 if marine['formation_num'] in self.movement_team:
                     pyxel.rectb(
                     sm.sm_visual_dimms["card_border_x"]-2,
-                    sm.sm_visual_dimms["card_border_y"][marine['formation_num'] - 1]-2,
+                    sm.sm_visual_dimms["card_border_y"][marine['formation_num']]-2,
                     sm.sm_visual_dimms["card_border_w"]+4,
                     sm.sm_visual_dimms["card_border_h"]+4,
                     9)
@@ -422,22 +420,126 @@ class MovementCard():
         elif self.move_click == 6:
             pass
 
-        
-            
+          
 class AttackCard():
     def __init__(self, card_info, space_marines, left_gs, right_gs):
         self.left_gs = left_gs
         self.right_gs = right_gs
+        self.attack_click = 0
+        self.space_marines = space_marines
+        self.card_info = card_info
+        self.gs_facing_match = []
 
-    def available_tgt_update(self):
+###                            ###
+### ATTACK CARD UPDATE METHODS ###
+###                            ###
+    def available_sm_update(self):
+        for marine in self.space_marines.combat_teams:
+            if marine['status'] == 'alive' and marine['team_color'] == self.card_info:
+                box_x = sm.sm_visual_dimms["card_border_x"]
+                box_y = sm.sm_visual_dimms["card_border_y"][marine['formation_num']]
+                box_w = sm.sm_visual_dimms["card_border_w"]
+                box_h = sm.sm_visual_dimms["card_border_h"]
+                if ui.box_click(box_x, box_y, box_w, box_h):
+                    self.attacker_choice = [marine['formation_num'],
+                                          marine['facing'],
+                                          marine['attk_range']]
+                    self.attack_click = 1
+                    
+#
+# TODO continue working on this method
+#
+    def sm_gs_selection_update(self):
+        if self.attacker_choice[1] == 'LEFT':
+            for key, value in self.left_gs.items():
+                if value['g_stealers']:
+                    info_l = [self.attacker_choice[1], key, len(value['g_stealers'])]
+                    if info_l not in self.gs_facing_match:
+                        self.gs_facing_match.append(info_l)
+        
+        elif self.attacker_choice[1] == 'RIGHT':
+            for key, value in self.right_gs.items():
+                if value['g_stealers']:
+                    info_r = [self.attacker_choice[1], key, len(value['g_stealers'])]
+                    if info_r not in self.gs_facing_match:
+                        self.gs_facing_match.append(info_r)
+        # self.attack_click = 2
+
+    
+    def in_range_check_update(self):
         pass
+
+
+
+    ###                            ###
+    ### ATTACK CARD DRAW METHODS   ###
+    ###                            ###
+    def available_sm_draw(self):
+        for marine in self.space_marines.combat_teams:
+            if marine['status'] == 'alive' and marine['team_color'] == self.card_info:
+                pyxel.rectb(
+                sm.sm_visual_dimms["card_border_x"]-2,
+                sm.sm_visual_dimms["card_border_y"][marine['formation_num']]-2,
+                sm.sm_visual_dimms["card_border_w"]+4,
+                sm.sm_visual_dimms["card_border_h"]+4,
+                9)
+    
+    def sm_gs_selection_draw(self):
+        # X COORDINATES FOR LEFT SIDE GS PORTRAITS, R to L
+        gs_left_x = (52, 35, 18, 1)
+        # X COORDINATES FOR RIGHT SIDE GS PORTRAITS, L to R
+        gs_right_x = (188, 205, 222, 239,)
+        # Y COORDINATES FOR ALL GS IMAGES, TOP TO BOTTOM
+        gs_img_y = (40, 76, 112, 148, 184, 220,)
+        
+        if self.gs_facing_match:
+### self.gs_facing_match = [['RIGHT', 3, 2]] 
+### [FACING, GS_FORMATION_NUM, GS_COUNT]
+### self.gs_facing_match = [['LEFT', 0, 2], ['LEFT', 2, 2]] (2 gs in each row (2 rows))
+            for gs in self.gs_facing_match:
+### gs = ['LEFT', 0, 2]
+                if gs[0] == 'LEFT':
+### n = 0, swarm = ['LEFT', 0]
+### n = 1, swarm = ['LEFT', 2]
+                    for n in range(gs[2]):
+                        pyxel.rectb(
+                            gs_left_x[n], 
+                            gs_img_y[gs[1]], 
+                            16, 
+                            32, 
+                            8)
+
+                elif gs[0] == 'RIGHT':
+                    for n in range(gs[2]):
+                        pyxel.rectb(
+                            gs_left_x[n], 
+                            gs_img_y[gs[1]], 
+                            16, 
+                            32, 
+                            8)
+    
+        # else:
+        #     print("NO GS FACING MATCH")
+
+
+
+
     
     ###                               ###
     ### MAIN AttackCard Class Methods ###
     ###                               ###
     def update(self):
-        print("ATTACK CARD UPDATE")
+        if self.attack_click == 0:
+            self.available_sm_update()
+        elif self.attack_click == 1:
+            self.sm_gs_selection_update()
+        elif self.attack_click == 2:
+            pass
     
     def draw(self):
-        print("ATTACK CARD DRAW")
+        if self.attack_click == 0:
+            self.available_sm_draw()
+        elif self.attack_click == 1:
+            self.sm_gs_selection_draw()
+        
 

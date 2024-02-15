@@ -94,13 +94,17 @@ def shuffle_deck(combat_teams):
     Returns:
         list: The updated list of marines with assigned formation numbers and facing directions.
     """   
-    # Create a list formation numbers from 1-6
-    formation_numbers = list(range(1, 7))
+    # Create a list formation numbers from 0-5
+    formation_numbers = list(range(0, 6))
     random.shuffle(formation_numbers)
     # Assign random formation numbers, set facing accordingly
     for marine in combat_teams:
-        marine['formation_num'] = formation_numbers.pop()  # Pop a unique formation number
-        marine['facing'] = 'LEFT' if marine['formation_num'] <= 3 else 'RIGHT'
+        # Pop a unique formation number
+        marine['formation_num'] = formation_numbers.pop()
+        if marine['formation_num'] <= 2:
+            marine['facing'] = 'LEFT'
+        else:
+            marine['facing'] = 'RIGHT'
     return combat_teams
 
 
@@ -123,31 +127,31 @@ class Space_marines:
             col = roster_dict["team_color"]
             sm_face = roster_dict["visual"]
             sm_name = roster_dict["sm_name"].split(" ")
-            single_y = sm_visual_dimms["arrow_y"][y_val - 1]
+            single_y = sm_visual_dimms["arrow_y"][y_val]
             attack_range = roster_dict["attk_range"]
             # sm card border
             pyxel.rectb(sm_visual_dimms["card_border_x"],
-                        sm_visual_dimms["card_border_y"][y_val - 1],
+                        sm_visual_dimms["card_border_y"][y_val],
                         sm_visual_dimms["card_border_w"],
                         sm_visual_dimms["card_border_h"], col,)
             # sm portrait
             pyxel.blt(sm_visual_dimms["portrait_x"] + 1,
-                        sm_visual_dimms["portrait_y"][y_val - 1], 0, sm_face[0], sm_face[1], 15, 16,)
+                        sm_visual_dimms["portrait_y"][y_val], 0, sm_face[0], sm_face[1], 15, 16,)
             # sm portrait border
             pyxel.rectb(sm_visual_dimms["portrait_x"],
-                        sm_visual_dimms["portrait_y"][y_val - 1], 17, 17, col)
+                        sm_visual_dimms["portrait_y"][y_val], 17, 17, col)
             # sm attack range
             pyxel.text(sm_visual_dimms["portrait_x"] - 10,
-                        sm_visual_dimms["portrait_y"][y_val - 1] + 2, f"{attack_range}", col)
+                        sm_visual_dimms["portrait_y"][y_val] + 2, f"{attack_range}", col)
             # SM Support Token Count
             pyxel.text(sm_visual_dimms["portrait_x"] + 24,
-                        sm_visual_dimms["portrait_y"][y_val - 1] + 2, f"{roster_dict['support_tokens']}", col)
+                        sm_visual_dimms["portrait_y"][y_val] + 2, f"{roster_dict['support_tokens']}", col)
             # SM name 1
             pyxel.text(sm_visual_dimms["name_x"],
-                       sm_visual_dimms["name_y"][y_val - 1], f"{sm_name[0]}", col)
+                       sm_visual_dimms["name_y"][y_val], f"{sm_name[0]}", col)
             # SM name 2
             pyxel.text(sm_visual_dimms["name_x"] - 2,
-                       sm_visual_dimms["name_y"][y_val - 1] + 6, f"{sm_name[1]}", col)
+                       sm_visual_dimms["name_y"][y_val] + 6, f"{sm_name[1]}", col)
             # sm facing arrows
             y_arrow_list = [single_y, single_y + 7, single_y + 14]
             
