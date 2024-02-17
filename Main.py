@@ -134,7 +134,7 @@ class ResolveActionState(GameState):
 class App:
     def __init__(self):
         pyxel.init(SCREEN_X, SCREEN_Y, title="SPACE HULK: DEATH ANGEL", fps=30)
-        pyxel.load("sh_da copy.pyxres")
+        pyxel.load("sh_da_gfx.pyxres")
         pyxel.mouse(True)
         self.state = MainMenuState()
         pyxel.run(self.update, self.draw)

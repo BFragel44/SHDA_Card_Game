@@ -404,9 +404,6 @@ class MovementCard():
             self.available_activate_update(self.card_info)
         elif self.move_click == 5:
             self.card_resolved = True
-        elif self.move_click == 6:
-            pass
-
 
     def draw(self):
         self.skip_button_draw()
@@ -416,9 +413,6 @@ class MovementCard():
             self.move_selection_draw()
         elif self.move_click == 2 or self.move_click == 3:
             self.available_flips_draw(self.card_info)
-        # elif self.move_click == 4:
-        elif self.move_click == 6:
-            pass
 
           
 class AttackCard():
@@ -429,6 +423,7 @@ class AttackCard():
         self.space_marines = space_marines
         self.card_info = card_info
         self.gs_facing_match = []
+        self.roll_screen = None
 
 ###                            ###
 ### ATTACK CARD UPDATE METHODS ###
@@ -442,34 +437,37 @@ class AttackCard():
                 box_h = sm.sm_visual_dimms["card_border_h"]
                 if ui.box_click(box_x, box_y, box_w, box_h):
                     self.attacker_choice = [marine['formation_num'],
-                                          marine['facing'],
-                                          marine['attk_range']]
+                                            marine['facing'],
+                                            marine['attk_range']]
                     self.attack_click = 1
-                    
-#
-# TODO continue working on this method
-#
+
     def sm_gs_selection_update(self):
+        gs_side = None
         if self.attacker_choice[1] == 'LEFT':
-            for key, value in self.left_gs.items():
-                if value['g_stealers']:
-                    info_l = [self.attacker_choice[1], key, len(value['g_stealers'])]
-                    if info_l not in self.gs_facing_match:
-                        self.gs_facing_match.append(info_l)
-        
+            gs_side = self.left_gs
         elif self.attacker_choice[1] == 'RIGHT':
-            for key, value in self.right_gs.items():
-                if value['g_stealers']:
-                    info_r = [self.attacker_choice[1], key, len(value['g_stealers'])]
-                    if info_r not in self.gs_facing_match:
-                        self.gs_facing_match.append(info_r)
-        # self.attack_click = 2
-
-    
-    def in_range_check_update(self):
-        pass
+            gs_side = self.right_gs
+        for key, value in gs_side.items():
+            if value['g_stealers']:
+                attack_info = [self.attacker_choice[1], key, 
+                                len(value['g_stealers'])]
+                if attack_info not in self.gs_facing_match:
+                    self.gs_facing_match.append(attack_info)
 
 
+    def in_range_check_update(self, gs_formation):
+        # self.attacker_choice = [marine['formation_num'],
+        #                                 marine['facing'],
+        #                                 marine['attk_range']]
+        lo_range = self.attacker_choice[0] - self.attacker_choice[2]
+        if lo_range < 0:
+            lo_range = 0   
+        hi_range = self.attacker_choice[0] + self.attacker_choice[2]
+        if hi_range > 5:
+            hi_range = 5
+        if gs_formation in range(lo_range, hi_range+1):
+            return True
+        return False
 
     ###                            ###
     ### ATTACK CARD DRAW METHODS   ###
@@ -488,43 +486,42 @@ class AttackCard():
         # X COORDINATES FOR LEFT SIDE GS PORTRAITS, R to L
         gs_left_x = (52, 35, 18, 1)
         # X COORDINATES FOR RIGHT SIDE GS PORTRAITS, L to R
-        gs_right_x = (188, 205, 222, 239,)
+        gs_right_x = (188, 205, 222, 239)
         # Y COORDINATES FOR ALL GS IMAGES, TOP TO BOTTOM
-        gs_img_y = (40, 76, 112, 148, 184, 220,)
-        
+        gs_img_y = (40, 76, 112, 148, 184, 220)
         if self.gs_facing_match:
-### self.gs_facing_match = [['RIGHT', 3, 2]] 
-### [FACING, GS_FORMATION_NUM, GS_COUNT]
-### self.gs_facing_match = [['LEFT', 0, 2], ['LEFT', 2, 2]] (2 gs in each row (2 rows))
+            # self.gs_facing_match = [['RIGHT', 3, 2]] 
+            #                         [FACING, GS_FORMATION_NUM, GS_COUNT]
+            # Selected Marine's card is highlighted:
+            pyxel.rectb(
+                sm.sm_visual_dimms["card_border_x"]-2,
+                sm.sm_visual_dimms["card_border_y"][self.attacker_choice[0]]-2,
+                sm.sm_visual_dimms["card_border_w"]+4,
+                sm.sm_visual_dimms["card_border_h"]+4,
+                9)
             for gs in self.gs_facing_match:
-### gs = ['LEFT', 0, 2]
-                if gs[0] == 'LEFT':
-### n = 0, swarm = ['LEFT', 0]
-### n = 1, swarm = ['LEFT', 2]
+                if self.in_range_check_update(gs[1]):
+                    if gs[0] == 'LEFT':
+                        gs_x = gs_left_x
+                        gs_y = gs[1]
+                    elif gs[0] == 'RIGHT':
+                        gs_x = gs_right_x
+                        gs_y = 6 - gs[1]
                     for n in range(gs[2]):
                         pyxel.rectb(
-                            gs_left_x[n], 
-                            gs_img_y[gs[1]], 
-                            16, 
-                            32, 
-                            8)
+                            gs_x[n], 
+                            gs_img_y[gs_y], 
+                            16, 32, 8)
+                        if ui.box_click(gs_x[n], 
+                                        gs_img_y[gs_y], 
+                                        16, 32):
+                            print("GS CLICKED")
+                            self.roll_screen = ui.RollScreen(gs[0], self.attacker_choice[0], gs[1])
 
-                elif gs[0] == 'RIGHT':
-                    for n in range(gs[2]):
-                        pyxel.rectb(
-                            gs_left_x[n], 
-                            gs_img_y[gs[1]], 
-                            16, 
-                            32, 
-                            8)
-    
         # else:
         #     print("NO GS FACING MATCH")
 
 
-
-
-    
     ###                               ###
     ### MAIN AttackCard Class Methods ###
     ###                               ###
@@ -535,11 +532,13 @@ class AttackCard():
             self.sm_gs_selection_update()
         elif self.attack_click == 2:
             pass
+        if self.roll_screen:
+            self.roll_screen.screen_update()
     
     def draw(self):
         if self.attack_click == 0:
             self.available_sm_draw()
         elif self.attack_click == 1:
             self.sm_gs_selection_draw()
-        
-
+        if self.roll_screen:
+            self.roll_screen.screen_draw()

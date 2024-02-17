@@ -17,7 +17,7 @@ def create_location_deck():
     final_locs - LIST of DICTs (shuffled per game setup rules on void lock)
     """
     final_locs = []
-    data = "project_rework\location_cards.csv"
+    data = "location_cards.csv"
     df = pd.read_csv(data)
     df.set_index("location")
     df.to_dict("dict")
