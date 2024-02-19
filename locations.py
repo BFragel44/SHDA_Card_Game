@@ -350,10 +350,10 @@ class Location_and_spawns:
         pyxel.text(171, 30, self.right_spawn_num, 0)
 
         # BLIP PILE DRAW
-        pyxel.blt(41, 4, 0, 192, 48, 32, 32)  # LEFT BLIP "SONAR" VISUAL
+        pyxel.blt(41, 4, 0, 192, 0, 32, 32)  # LEFT BLIP "SONAR" VISUAL
         pyxel.text(56, 18, str(self.left_blip_num), 7)  # LEFT BLIP NUMBER
 
-        pyxel.blt(182, 4, 0, 192, 48, 32, 32)  # RIGHT BLIP "SONAR" VISUAL
+        pyxel.blt(182, 4, 0, 192, 0, 32, 32)  # RIGHT BLIP "SONAR" VISUAL
         pyxel.text(196, 18, str(self.right_blip_num), 7)  # RIGHT BLIP NUMBER
 
         # TERRAIN DRAW

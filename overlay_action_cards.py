@@ -515,8 +515,10 @@ class AttackCard():
                         if ui.box_click(gs_x[n], 
                                         gs_img_y[gs_y], 
                                         16, 32):
-                            print("GS CLICKED")
                             self.roll_screen = ui.RollScreen(gs[0], self.attacker_choice[0], gs[1])
+                            if self.roll_screen.dice.roll_result:
+                                self.attack_click = 0
+                                print("roll result")
 
         # else:
         #     print("NO GS FACING MATCH")
@@ -530,8 +532,6 @@ class AttackCard():
             self.available_sm_update()
         elif self.attack_click == 1:
             self.sm_gs_selection_update()
-        elif self.attack_click == 2:
-            pass
         if self.roll_screen:
             self.roll_screen.screen_update()
     
