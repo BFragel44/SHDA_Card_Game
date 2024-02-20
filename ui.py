@@ -47,6 +47,10 @@ def phase_box_click():
         return True
     return False
 
+def gs_kill(gs_facing, gs_formation):
+    if gs_facing == "RIGHT":
+        gs_formation = 6 - gs_formation
+    print(f"GS {gs_facing = } {gs_formation = } has been killed!")
 
 class RollScreen:
     def __init__(self, facing, sm_formation, gs_formation):
@@ -62,22 +66,25 @@ class RollScreen:
         self.gs_sprite_v = 64
 
     def screen_update(self):
-        self.dice.dice_update()
-        # DICE ROLLING (phase 1 probably not needed here...)
-        # if self.dice.roll_phase == 1:
-        #     pass
-        if self.dice.roll_phase == 2:
-            hit = [1, 2, 3]
-            miss = [0, 4, 5, 6]
-            if self.dice.roll_result in hit:
-                self.gs_sprite_u = 96
-                self.gs_sprite_h = 16
-                self.gs_anim_y = 62
-                # add in GS remove method
-            elif self.dice.roll_result in miss:
-                self.gs_sprite_u = 96
-                self.gs_sprite_v = 80
-            self.dice.roll_phase = 3
+        if self.dice.roll_phase != 3:
+            self.dice.dice_update()
+            # DICE ROLLING (phase 1 not needed here...)
+            if self.dice.roll_phase == 2:
+                hit = [1, 2, 3]
+                miss = [0, 4, 5, 6]
+                if self.dice.roll_result in hit:
+                    self.gs_sprite_u = 96
+                    self.gs_sprite_h = 16
+                    self.gs_anim_y = 62
+                    # add in GS remove method
+                    gs_kill(self.facing, self.gs_formation_num)
+
+                elif self.dice.roll_result in miss:
+                    self.gs_sprite_u = 96
+                    self.gs_sprite_v = 80
+                    self.gs_anim_x += 20
+                    gs_kill(self.facing, self.gs_formation_num)
+                self.dice.roll_phase = 3
 
     def screen_draw(self):
         # 197 x 197 mini screen ((12.31 pyxres blocks tall/wide))
@@ -119,7 +126,6 @@ class Dice:
         self.roll_result = None
         self.roll_anim_counter = 0
         self.roll_phase = 0
-
 
     def dice_roll(self):
         generate_roll = random.randint(0, 6)
