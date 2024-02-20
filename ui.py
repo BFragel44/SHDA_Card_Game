@@ -49,10 +49,12 @@ def phase_box_click():
 
 
 class RollScreen:
-    def __init__(self, facing, sm_formation, gs_formation):
+    def __init__(self, facing, sm_formation, sm_tokens, gs_formation, gs_swarm_num):
         self.facing = facing
         self.sm_formation_num = sm_formation
+        self.sm_tokens = sm_tokens
         self.gs_formation_num = gs_formation
+        self.gs_swarm_num = gs_swarm_num
         self.dice = Dice()
         self.dice.roll_result = None
         self.gs_anim_x = 150
@@ -60,12 +62,13 @@ class RollScreen:
         self.gs_sprite_h = 32
         self.gs_anim_y = 45
         self.gs_sprite_v = 64
-
+        self.gs_hit = False
+        self.hit_values = None
+    
     def screen_update(self):
         self.dice.dice_update()
-        # DICE ROLLING (phase 1 probably not needed here...)
-        # if self.dice.roll_phase == 1:
-        #     pass
+        # DICE ROLLING 
+        # (phase 1 not needed here...)
         if self.dice.roll_phase == 2:
             hit = [1, 2, 3]
             miss = [0, 4, 5, 6]
@@ -73,11 +76,15 @@ class RollScreen:
                 self.gs_sprite_u = 96
                 self.gs_sprite_h = 16
                 self.gs_anim_y = 62
-                # add in GS remove method
+                self.gs_hit = True
+                self.hit_values = [self.facing, self.gs_formation_num, 
+                                   self.gs_swarm_num]
             elif self.dice.roll_result in miss:
                 self.gs_sprite_u = 96
                 self.gs_sprite_v = 80
+                # TODO add in re-roll option/gfx here
             self.dice.roll_phase = 3
+
 
     def screen_draw(self):
         # 197 x 197 mini screen ((12.31 pyxres blocks tall/wide))
@@ -85,6 +92,8 @@ class RollScreen:
         pyxel.clip(20, 20, 217, 217)
         pyxel.rectb(20, 20, 217, 217, 8)
         # pyxel.blt(32, 45, 0, 0, 64, 191, 255)
+        # Support Token text:
+        pyxel.text(60, 80, f"Support Tokens: {self.sm_tokens}", 7)
         # SM and GS sprites:
         pyxel.blt(45, 45, 0, 0, 64, 32, 32)
         pyxel.blt(self.gs_anim_x, self.gs_anim_y, 0, self.gs_sprite_u, 
@@ -137,7 +146,6 @@ class Dice:
             self.roll_anim_counter += 1
             if self.roll_anim_counter < 50:  
                 self.u = self.sm_dice.get(self.roll_anim_counter % 6)
-
             else:
                 self.dice_roll()
                 print(f"{self.roll_result = }")

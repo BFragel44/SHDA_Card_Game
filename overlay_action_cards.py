@@ -438,7 +438,8 @@ class AttackCard():
                 if ui.box_click(box_x, box_y, box_w, box_h):
                     self.attacker_choice = [marine['formation_num'],
                                             marine['facing'],
-                                            marine['attk_range']]
+                                            marine['attk_range'],
+                                            marine['support_tokens']]
                     self.attack_click = 1
 
     def sm_gs_selection_update(self):
@@ -482,6 +483,18 @@ class AttackCard():
                 sm.sm_visual_dimms["card_border_h"]+4,
                 9)
     
+    def gs_kill(self, gs_side, gs_formation, gs_swarm_num):
+        print(f"{self.left_gs = }")
+        print(f"{self.right_gs = }")
+
+        left_or_right = None
+        if gs_side == 'Left':
+            left_or_right = self.left_gs
+        else:
+            left_or_right = self.right_gs
+        left_or_right[gs_formation]['g_stealers'].pop(gs_swarm_num)
+
+
     def sm_gs_selection_draw(self):
         # X COORDINATES FOR LEFT SIDE GS PORTRAITS, R to L
         gs_left_x = (52, 35, 18, 1)
@@ -515,10 +528,13 @@ class AttackCard():
                         if ui.box_click(gs_x[n], 
                                         gs_img_y[gs_y], 
                                         16, 32):
-                            self.roll_screen = ui.RollScreen(gs[0], self.attacker_choice[0], gs[1])
-                            if self.roll_screen.dice.roll_result:
-                                self.attack_click = 0
-                                print("roll result")
+                            self.attack_click = 2
+                            self.roll_screen = ui.RollScreen(gs[0], 
+                                                             self.attacker_choice[0],
+                                                             self.attacker_choice[3],
+                                                             gs[1], 
+                                                             n)
+
 
         # else:
         #     print("NO GS FACING MATCH")
@@ -532,13 +548,17 @@ class AttackCard():
             self.available_sm_update()
         elif self.attack_click == 1:
             self.sm_gs_selection_update()
-        if self.roll_screen:
+        elif self.attack_click == 2:
             self.roll_screen.screen_update()
+            if self.roll_screen.gs_hit:
+                self.gs_kill(self.left_gs, self.roll_screen.gs_formation_num, self.roll_screen.gs_swarm_num)
+                self.attack_click = 0
+
     
     def draw(self):
         if self.attack_click == 0:
             self.available_sm_draw()
         elif self.attack_click == 1:
             self.sm_gs_selection_draw()
-        if self.roll_screen:
+        elif self.attack_click == 2:
             self.roll_screen.screen_draw()
