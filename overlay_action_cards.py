@@ -482,15 +482,18 @@ class AttackCard():
                 sm.sm_visual_dimms["card_border_w"]+4,
                 sm.sm_visual_dimms["card_border_h"]+4,
                 9)
-    
+
     def gs_kill(self, gs_side, gs_formation, gs_swarm_num):
+        print(f"{gs_side = }")
         print(f"{self.left_gs = }")
         print(f"{self.right_gs = }")
-
+        
         left_or_right = None
-        if gs_side == 'Left':
+        if gs_side == 'LEFT':
+            print("LEFT!")
             left_or_right = self.left_gs
         else:
+            print("RIGHT!")
             left_or_right = self.right_gs
         left_or_right[gs_formation]['g_stealers'].pop(gs_swarm_num)
 
@@ -534,8 +537,6 @@ class AttackCard():
                                                              self.attacker_choice[3],
                                                              gs[1], 
                                                              n)
-
-
         # else:
         #     print("NO GS FACING MATCH")
 
@@ -550,9 +551,10 @@ class AttackCard():
             self.sm_gs_selection_update()
         elif self.attack_click == 2:
             self.roll_screen.screen_update()
-            if self.roll_screen.gs_hit:
-                self.gs_kill(self.left_gs, self.roll_screen.gs_formation_num, self.roll_screen.gs_swarm_num)
-                self.attack_click = 0
+            # if self.roll_screen.gs_hit:
+                # print(f"{self.attacker_choice[1]}")
+                # self.gs_kill(self.attacker_choice[1], self.roll_screen.gs_formation_num, self.roll_screen.gs_swarm_num)
+                # self.attack_click = 0
 
     
     def draw(self):

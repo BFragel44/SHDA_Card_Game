@@ -107,11 +107,7 @@ class SelectActionState(GameState):
     def draw(self, game):
         self.action_cards._draw()
 
-# TODO
-# TODO
-# TODO - competely rework this state, first pass was GARBAGGIO
-# TODO
-# TODO
+
 class ResolveActionState(GameState):
     def __init__(self, action_card_choices):
         super().__init__()
