@@ -64,6 +64,7 @@ class ResolveActionUI():
         self.move_card = None
         self.attack_card = None
         self.current_card_type = None
+        self.phase_resolved = False
 
     def update(self):
         if self.click_phase == 0:
@@ -72,10 +73,9 @@ class ResolveActionUI():
                 try:
                     self.current_card = next(self.action_cards)
                     self.click_phase = 1
+                # if no more self.action_cards, NEXT PHASE activation
                 except StopIteration:
-                    pass
-                    # if no more elements in self.action_cards
-                    # GENESTEALER ATTACK PHASE activation here       
+                    self.phase_resolved = True       
         elif self.click_phase == 1:
             self.card_info = self.selected_action_cards.get(self.current_card)
             #  (3, 'support_card')
@@ -102,6 +102,9 @@ class ResolveActionUI():
                 elif self.attack_card:
                     self.current_card_type = 'ac'
                     self.attack_card.update()
+                    if self.attack_card.card_resolved:
+                        self.click_phase = 0
+                        self.attack_card = None
 
     def support_card(self, card_info): # TODO do I need card_info here?
         for marine in self.space_marines.combat_teams:
@@ -420,27 +423,46 @@ class AttackCard():
         self.left_gs = left_gs
         self.right_gs = right_gs
         self.attack_click = 0
-        self.space_marines = space_marines
         self.card_info = card_info
         self.gs_facing_match = []
         self.roll_screen = None
+        self.space_marines = space_marines
+        for marine in self.space_marines.combat_teams:
+            marine['attack_used'] = False
+        self.available_marines = []
+        self.initial_length = None
+        self.card_resolved = False
+        
 
 ###                            ###
 ### ATTACK CARD UPDATE METHODS ###
 ###                            ###
     def available_sm_update(self):
-        for marine in self.space_marines.combat_teams:
-            if marine['status'] == 'alive' and marine['team_color'] == self.card_info:
-                box_x = sm.sm_visual_dimms["card_border_x"]
-                box_y = sm.sm_visual_dimms["card_border_y"][marine['formation_num']]
-                box_w = sm.sm_visual_dimms["card_border_w"]
-                box_h = sm.sm_visual_dimms["card_border_h"]
-                if ui.box_click(box_x, box_y, box_w, box_h):
-                    self.attacker_choice = [marine['formation_num'],
-                                            marine['facing'],
-                                            marine['attk_range'],
-                                            marine['support_tokens']]
-                    self.attack_click = 1
+        if not self.available_marines:
+            self.available_marines = [marine for marine in self.space_marines.combat_teams 
+                                      if marine['attack_used'] == False and 
+                                      marine['team_color'] == self.card_info]
+        
+            self.initial_length = len(self.available_marines)
+        
+        # Check if self.available_marines is empty after it has been populated
+        if len(self.available_marines) == 0 and self.initial_length == 0:
+            print("End of game phase")
+            pyxel.cls(0)
+            self.attack_click = 3
+
+        for marine in self.available_marines:
+            box_x = sm.sm_visual_dimms["card_border_x"]
+            box_y = sm.sm_visual_dimms["card_border_y"][marine['formation_num']]
+            box_w = sm.sm_visual_dimms["card_border_w"]
+            box_h = sm.sm_visual_dimms["card_border_h"]
+            if ui.box_click(box_x, box_y, box_w, box_h):
+                self.attacker_choice = [marine['formation_num'],
+                                        marine['facing'],
+                                        marine['attk_range'],
+                                        marine['support_tokens']]
+                self.attack_click = 1
+        
 
     def sm_gs_selection_update(self):
         gs_side = None
@@ -454,7 +476,6 @@ class AttackCard():
                                 len(value['g_stealers'])]
                 if attack_info not in self.gs_facing_match:
                     self.gs_facing_match.append(attack_info)
-
 
     def in_range_check_update(self, gs_formation):
         # self.attacker_choice = [marine['formation_num'],
@@ -475,7 +496,8 @@ class AttackCard():
     ###                            ###
     def available_sm_draw(self):
         for marine in self.space_marines.combat_teams:
-            if marine['status'] == 'alive' and marine['team_color'] == self.card_info:
+
+            if marine['attack_used'] == False and marine['team_color'] == self.card_info:
                 pyxel.rectb(
                 sm.sm_visual_dimms["card_border_x"]-2,
                 sm.sm_visual_dimms["card_border_y"][marine['formation_num']]-2,
@@ -484,10 +506,6 @@ class AttackCard():
                 9)
 
     def gs_kill(self, gs_side, gs_formation, gs_swarm_num):
-        print(f"{gs_side = }")
-        print(f"{self.left_gs = }")
-        print(f"{self.right_gs = }")
-        
         left_or_right = None
         if gs_side == 'LEFT':
             print("LEFT!")
@@ -496,7 +514,6 @@ class AttackCard():
             print("RIGHT!")
             left_or_right = self.right_gs
         left_or_right[gs_formation]['g_stealers'].pop(gs_swarm_num)
-
 
     def sm_gs_selection_draw(self):
         # X COORDINATES FOR LEFT SIDE GS PORTRAITS, R to L
@@ -551,10 +568,27 @@ class AttackCard():
             self.sm_gs_selection_update()
         elif self.attack_click == 2:
             self.roll_screen.screen_update()
-            # if self.roll_screen.gs_hit:
-                # print(f"{self.attacker_choice[1]}")
-                # self.gs_kill(self.attacker_choice[1], self.roll_screen.gs_formation_num, self.roll_screen.gs_swarm_num)
-                # self.attack_click = 0
+        elif self.attack_click == 3:
+            self.card_resolved = True
+
+        if self.roll_screen and self.attack_click != 0:
+            if self.roll_screen.dice.roll_phase == 5:
+                # removes the sm from the available attackers
+                for marine in self.space_marines.combat_teams:
+                        if marine['formation_num'] == self.attacker_choice[0]:
+                            marine['attack_used'] = True
+                if self.roll_screen.gs_hit:
+                    self.gs_kill(self.attacker_choice[1], self.roll_screen.gs_formation_num, self.roll_screen.gs_swarm_num)
+                pyxel.clip()
+                pyxel.cls(0)
+                self.roll_screen = None
+                self.attack_click = 0
+        # Remove marines from self.available_marines if marine['attack_used'] == True
+        self.available_marines = [marine for marine in self.available_marines if not marine['attack_used']]
+
+
+# TODO Need to check if available attackers == 0 to move on to
+#       next card or phase.
 
     
     def draw(self):

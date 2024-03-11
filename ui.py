@@ -47,16 +47,6 @@ def phase_box_click():
         return True
     return False
 
-class AnimationTimer:
-    def __init__(self, frames):
-        self.timer = 0
-        self.end_time = frames
-
-    def start_timer(self):
-        self.timer += 1
-    
-    def has_ended(self):
-        return self.timer >= self.end_time
 
 class RollScreen:
     def __init__(self, facing, sm_formation, sm_tokens, gs_formation, gs_swarm_num):
@@ -76,24 +66,20 @@ class RollScreen:
         self.hit_values = None
         self.sound_played = False
 
-# TODO might be getting rid of this method entirely...
     def re_roll(self):
         pyxel.cls(0)
-        pyxel.text(60, 100, "Re-roll?", 7)
-        pyxel.rect(60, 100, 40, 8, 7)
-        pyxel.rect(60, 110, 40, 8, 7)
-        # if box_click(60, 100, 40, 8):
-        #     self.sm_tokens -= 1
-        #     self.dice.roll_phase = 0
-        #     self.dice.roll_anim_counter = 0
-        #     self.dice.roll_result = None
-        #     self.gs_sprite_u = 32
-        #     self.gs_sprite_h = 32
-        #     self.gs_anim_y = 45
-        #     self.gs_sprite_v = 64
-        #     self.gs_hit = False
-        # if box_click(60, 110, 40, 8):
-        #     self.dice.roll_phase = 4
+        self.sm_tokens -= 1
+        self.dice.roll_phase = 0
+        self.dice.roll_anim_counter = 0
+        self.dice.roll_result = None
+        self.gs_anim_x = 150
+        self.gs_sprite_u = 32
+        self.gs_sprite_h = 32
+        self.gs_anim_y = 45
+        self.gs_sprite_v = 64
+        self.gs_hit = False
+        self.sound_played = False
+        self.dice = Dice()
 
 
     def hit_miss_update(self):
@@ -118,8 +104,9 @@ class RollScreen:
             self.hit_miss_update()
         elif self.dice.roll_phase == 3:
             if self.sm_tokens > 0:
-                print("re-roll phase")
-                # self.re_roll()
+                # print("re-roll phase")
+                pass
+
 
     def roll_ui_draw(self):
         # 197 x 197 mini screen ((12.31 pyxres blocks tall/wide))
@@ -142,7 +129,6 @@ class RollScreen:
                 # SM muzzle flash and SFX
                 pyxel.play(0, 13, loop=False)
                 pyxel.blt(75, 53, 0, 48, 16, 16, 16, 0)
-
 
     def roll_result_sfx(self):
         hit = [1, 2, 3]
@@ -170,9 +156,13 @@ class RollScreen:
             # RE-ROLL BOX CLICKED
             if box_click(100, 125, 40, 10):
                 print("Re-roll box clicked")
+                self.re_roll()
+                self.dice.roll_phase = 0
         # PROCEED BOX CLICKED
         if box_click(100, 110, 40, 10):
             print("Proceed box clicked")
+            self.dice.roll_phase = 5
+            
 
 ####
 # Main Draw Method
@@ -186,8 +176,7 @@ class RollScreen:
             self.roll_result_sfx()
         if self.dice.roll_phase == 3:
             self.post_roll_options()
-
-# TODO: UNIFY ROLL_PHASE 2 AS THE POST-ROLL PHASE
+            
             
 class Dice:
     def __init__(self, dice_default=112):
