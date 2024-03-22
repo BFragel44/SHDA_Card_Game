@@ -176,8 +176,49 @@ class RollScreen:
             self.roll_result_sfx()
         if self.dice.roll_phase == 3:
             self.post_roll_options()
-            
-            
+
+# attack = {
+# 'swarm': swarm_dir,
+# 'swarm_size': len(right_swarm),
+# 'facing': marine['facing'],
+# 'formation_num': marine['formation_num'],
+# 'back_attack': marine['facing'] != swarm_dir}
+
+class GsAttackRoll:
+    def __init__(self, attack_package):
+        self.attack_package = attack_package
+        self.dice = Dice()
+        self.dice.roll_result = None
+        self.gs_anim_x = 150
+        self.gs_sprite_u = 32
+        self.gs_sprite_h = 32
+        self.gs_anim_y = 45
+        self.gs_sprite_v = 64
+        self.gs_hit = False
+        self.hit_values = None
+        self.sound_played = False
+
+    def update(self):
+        self.dice.dice_update()
+        if self.dice.roll_phase == 2:
+            self.hit_miss_update()
+        elif self.dice.roll_phase == 3:
+            if self.sm_tokens > 0:
+                # print("re-roll phase")
+                pass
+
+    def draw(self):
+        pyxel.cls(0)
+        self.dice.dice_draw()
+        # DICE ROLLING
+        if self.dice.roll_phase == 1:
+            self.roll_sprites_draw()
+        if self.dice.roll_phase == 2:
+            self.roll_result_sfx()
+        if self.dice.roll_phase == 3:
+            self.post_roll_options()
+
+
 class Dice:
     def __init__(self, dice_default=112):
         self.u = dice_default

@@ -5,6 +5,7 @@ import shda_marines as sm
 # Action types:
 # ----------------
 # ----------------
+# TODO - add in text description of current action on location box
 # 1. SUPPORT CARD
 # ----------------
 #   a. [Gain a Support Token, to be placed on any Marine] + [Execute text of card]
@@ -40,6 +41,7 @@ import shda_marines as sm
 #           Note: If a Marine has Support Tokens, they may be spent 1 per re-roll and reattempt to roll an attack. 
 
 # Action Cards remain selected until end of NEXT Chose Actions phase (cannot use same action twice in a row).
+# TODO add in space marine powers to attack rolls (aka Brother Leon able to attack 3x)
 
 
 # ACTION RESOLUTION PHASE
@@ -81,7 +83,7 @@ class ResolveActionUI():
             #  (3, 'support_card')
             if self.card_info[1] == 'support_card':
                 self.current_card_type = 'sc'
-                self.support_card(self.card_info[0])
+                self.support_card()
 
             elif self.card_info[1] == 'move_act_card':
                 if not self.move_card:
@@ -106,7 +108,7 @@ class ResolveActionUI():
                         self.click_phase = 0
                         self.attack_card = None
 
-    def support_card(self, card_info): # TODO do I need card_info here?
+    def support_card(self):
         for marine in self.space_marines.combat_teams:
             if marine['status'] == 'alive':
                 box_x = sm.sm_visual_dimms["card_border_x"]
@@ -134,9 +136,15 @@ class ResolveActionUI():
         if self.click_phase == 1 and self.current_card_type == 'sc':
             self.support_card_draw()
         elif self.click_phase == 1 and self.current_card_type == 'mc':
-            self.move_card.draw()
+            if self.move_card is not None:
+                self.move_card.draw()
+            else:
+                print("Error: move_card is None")
         elif self.click_phase == 1 and self.current_card_type == 'ac':
-            self.attack_card.draw()
+            if self.attack_card is not None:
+                self.attack_card.draw()
+            else:
+                print("Error: attack_card is None")
 
 ###                          ###
 ###    MOVEMENT CLASS        ###
@@ -187,7 +195,7 @@ class MovementCard():
             elif self.move_click == 2:
                 self.move_click = 4
             elif self.move_click == 4:
-                print("self.move_click = 4")
+                pass
             self.reset_selection()
 
     def skip_button_draw(self):
@@ -253,7 +261,6 @@ class MovementCard():
                 if marine['formation_num'] in self.movement_team and ui.box_click(box_x, box_y, box_w, box_h):
                     self.selected_move = marine['formation_num']
                     self.move_click = 3
-                    print("self.selected_move = ", self.selected_move)
     
     def flip_selection_update(self):
         self.space_marines.flip_facing(self.selected_move)
@@ -267,32 +274,23 @@ class MovementCard():
             self.move_click = 2
 
     def available_activate_update(self, card_info):
-        print("self.terrain_locations = ", self.terrain_locations)
-        print(self.terrain_side)
         for terrain in self.terrain_locations:
             # 1. check if the terrain is door or control_panel
             if terrain[0] == 'door' or terrain[0] == 'control_panel':
-                print("terrain = ", terrain)
                 self.activatable_terrain = terrain
                 terrain_index = self.terrain_locations.index(terrain)
                 # 2. check if the terrain is on the left or right side of the room
                 if terrain_index == 0 or terrain_index == 1:
-                    print("left side")
                     self.terrain_side = "LEFT"
                 elif terrain_index == 2 or terrain_index == 3:
-                    print("right side")
                     self.terrain_side = "RIGHT"
                     terrain_index = 6 - terrain_index
         # 3. check if the selected marine is facing the terrain
         for marine in self.space_marines.combat_teams:
             if marine['facing'] == self.terrain_side and marine['team_color'] == card_info:
-                print("facing match")
-                print("terrain_index = ", terrain_index)
-                print("marine['formation_num'] = ", marine['formation_num'])
                 if marine['formation_num'] == terrain_index:
                     if marine['support_tokens'] > 0:
                         # will need to add the activation function/method here
-                        print("TOKENS + MATCH")
                         box_x = sm.sm_visual_dimms["card_border_x"]
                         box_y = sm.sm_visual_dimms["card_border_y"][marine['formation_num']]
                         box_w = sm.sm_visual_dimms["card_border_w"]
@@ -305,8 +303,6 @@ class MovementCard():
                         if ui.box_click(box_x, box_y, box_w, box_h):
                             self.selected_move = marine['formation_num']
                             self.move_click = 5
-                            print("self.selected_move = ", self.selected_move)
-                            print("activation action ACTIVATED HERE")
         else:
             self.move_click = 5
         
@@ -447,7 +443,6 @@ class AttackCard():
         
         # Check if self.available_marines is empty after it has been populated
         if len(self.available_marines) == 0 and self.initial_length == 0:
-            print("End of game phase")
             pyxel.cls(0)
             self.attack_click = 3
 
@@ -508,12 +503,12 @@ class AttackCard():
     def gs_kill(self, gs_side, gs_formation, gs_swarm_num):
         left_or_right = None
         if gs_side == 'LEFT':
-            print("LEFT!")
             left_or_right = self.left_gs
         else:
-            print("RIGHT!")
             left_or_right = self.right_gs
         left_or_right[gs_formation]['g_stealers'].pop(gs_swarm_num)
+        self.gs_facing_match = [gs for gs in self.gs_facing_match if 
+                                not (gs[0] == gs_side and gs[1] == gs_formation)]
 
     def sm_gs_selection_draw(self):
         # X COORDINATES FOR LEFT SIDE GS PORTRAITS, R to L

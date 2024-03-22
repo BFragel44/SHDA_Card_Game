@@ -6,6 +6,7 @@ import locations as loc
 import event_cards as ec
 import overlay_action_cards as oac
 import ui
+import gs_attack_phase as gsa
 
 # SCREEN DIMENSIONS
 SCREEN_X = 257
@@ -116,7 +117,6 @@ class ResolveActionState(GameState):
     def update(self, game):
         self.action_overlay.update()
         if self.action_overlay.phase_resolved:
-            print("CUE NEXT GAME STATE")
             self.next_state = GenestealerAttackState()
 
     def draw(self, game):
@@ -131,22 +131,21 @@ class ResolveActionState(GameState):
 class GenestealerAttackState(GameState):
     def __init__(self):
         super().__init__()
-        # self.action_overlay = oac.ResolveActionUI(action_card_choices, space_marines, location_and_spawns)
+        self.gs_attack_overlay = gsa.ResolveGSAttackUI(space_marines, location_and_spawns)
 
     def update(self, game):
-        pass
-        # self.action_overlay.update()
-        # if self.action_overlay.phase_resolved:
-            # print("CUE NEXT GAME STATE")
+        self.gs_attack_overlay.update()
+        if self.gs_attack_overlay.phase_resolved:
+            print("CUE NEXT GAME STATE")
             # self.next_state = GameBoardState()
 
     def draw(self, game):
         pyxel.cls(0)
-        pyxel.text(101, 8, "Genestealer Attack", 7) 
+        pyxel.text(100, 8, "Genestealer Attack", 7) 
         pyxel.text(119, 16, "State", 7)
-        # self.space_marines.formation_draw()
-        # location_and_spawns.draw()
-        # self.action_overlay.overlay_draw()
+        self.space_marines.formation_draw()
+        location_and_spawns.draw()
+        self.gs_attack_overlay.overlay_draw()
 
 
 ######################
@@ -156,6 +155,7 @@ class App:
         pyxel.init(SCREEN_X, SCREEN_Y, title="SPACE HULK: DEATH ANGEL", fps=30)
         pyxel.load("sh_da_gfx.pyxres")
         pyxel.mouse(True)
+        # self.state = GenestealerAttackState()
         self.state = MainMenuState()
         pyxel.run(self.update, self.draw)
 
