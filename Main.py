@@ -155,8 +155,8 @@ class App:
         pyxel.init(SCREEN_X, SCREEN_Y, title="SPACE HULK: DEATH ANGEL", fps=30)
         pyxel.load("sh_da_gfx.pyxres")
         pyxel.mouse(True)
-        # self.state = GenestealerAttackState()
-        self.state = MainMenuState()
+        self.state = GenestealerAttackState()
+        # self.state = MainMenuState()
         pyxel.run(self.update, self.draw)
 
     def update(self):

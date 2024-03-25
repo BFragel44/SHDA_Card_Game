@@ -113,12 +113,12 @@ class Location_and_spawns:
         # [('door', 1, 'yellow'), ...]
         self.loc_terrain_1L = (
             self.locations_deck[self.room_number]["l_terrain_1"],  # NAME
-            self.locations_deck[self.room_number]["d_l_terrain_1"] - 1,  # FORMATION
+            self.locations_deck[self.room_number]["d_l_terrain_1"],  # FORMATION
             self.terrain_imgs.get(self.locations_deck[self.room_number]["l_terrain_1"])[1],)  # COLOR
 
         self.loc_terrain_2L = (
             self.locations_deck[self.room_number]["l_terrain_2"],
-            self.locations_deck[self.room_number]["d_l_terrain_2"] - 1,
+            self.locations_deck[self.room_number]["d_l_terrain_2"],
             self.terrain_imgs.get(self.locations_deck[self.room_number]["l_terrain_2"])[1],)
 
         terrain_marker_1L = {"terrain_color": self.loc_terrain_1L[2]}
@@ -371,34 +371,22 @@ class Location_and_spawns:
 
         right1_img = self.terrain_imgs.get(self.loc_terrain_1R[0])
         right2_img = self.terrain_imgs.get(self.loc_terrain_2R[0])
-        right1_formation_num = 6 - self.loc_terrain_1R[1]
-        right2_formation_num = 6 - self.loc_terrain_2R[1]
+        right1_formation_num = self.loc_terrain_1R[1]
+        right2_formation_num = self.loc_terrain_2R[1]
 
         ##PACKAGES ALL TERRAIN INFO ABOVE AND CREATES EACH TERRAIN IMG AND PLACEMENT PER LOCATION CARD
         # pyxel.blt(x, y, img, u, v, w, h)
         left_loc_1 = pyxel.blt(
             terrain_left_x, terrain_y[left1_formation_num], 1, left1_img[0], 0, 16, 32)
 
-        left_loc_2 = pyxel.blt(
-            terrain_left_x, terrain_y[left2_formation_num], 1, left2_img[0], 0, 16, 32)
+        left_loc_2 = pyxel.blt(terrain_left_x, terrain_y[left2_formation_num], 
+            1, left2_img[0], 0, 16, 32)
 
-        right_loc_1 = pyxel.blt(
-            terrain_right_x,
-            terrain_y[right1_formation_num],
-            1,
-            right1_img[0],
-            0,
-            16,
-            32,)
+        right_loc_1 = pyxel.blt(terrain_right_x, terrain_y[right1_formation_num],
+            1, right1_img[0], 0, 16, 32,)
 
-        right_loc_2 = pyxel.blt(
-            terrain_right_x,
-            terrain_y[right2_formation_num],
-            1,
-            right2_img[0],
-            0,
-            16,
-            32,)
+        right_loc_2 = pyxel.blt( terrain_right_x, terrain_y[right2_formation_num],
+            1, right2_img[0], 0, 16, 32,)
 
         ### GS IMAGE COORDINATES ON IMAGE BANK
         gs_img = 96
@@ -443,7 +431,7 @@ class Location_and_spawns:
                 
                 for gs_right_team in self.spawned_right_swarms[right_swarms]["g_stealers"]:
                     pyxel.blt(gs_right_x[row_number],
-                                gs_img_y[6 - right_swarms],
+                                gs_img_y[right_swarms],
                                 0,
                                 gs_img,
                                 0,
@@ -451,7 +439,7 @@ class Location_and_spawns:
                                 16,)
                     
                     pyxel.blt(gs_right_x[row_number],
-                                gs_team_y[6 - right_swarms],
+                                gs_team_y[right_swarms],
                                 0,
                                 swarm_dict.get(gs_right_team),
                                 0,

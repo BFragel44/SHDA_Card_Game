@@ -69,19 +69,17 @@ class ResolveGSAttackUI:
         gs_img_y = (40, 76, 112, 148, 184, 220)
         # draw rectangles around each gs and marine pairing in self.all_attacks
         for attack in self.attack_queue:
-            print(attack)
-            if attack['swarm'] == 'LEFT':
+            if attack['swarm'] == 'LEFT' and attack['swarm_size'] > 0:
                 # make separate box if left_GS > 0
                 box_x = gs_left_x
                 
-            if attack['swarm'] == 'RIGHT':
+            if attack['swarm'] == 'RIGHT' and attack['swarm_size'] > 0:
                 # make separate box if right_GS > 0
                 box_x = gs_right_x
-
-            pyxel.rectb(
-                box_x-2,
-                gs_img_y[attack['formation_num']]-2,
-                19, 34, 9)
+            # GS outline box
+            pyxel.rectb(box_x-2,
+                        gs_img_y[attack['formation_num']]-2,
+                        19, 34, 9)
             # SM outline box
             pyxel.rectb(
                 sm.sm_visual_dimms["card_border_x"]-2,

@@ -581,11 +581,6 @@ class AttackCard():
         # Remove marines from self.available_marines if marine['attack_used'] == True
         self.available_marines = [marine for marine in self.available_marines if not marine['attack_used']]
 
-
-# TODO Need to check if available attackers == 0 to move on to
-#       next card or phase.
-
-    
     def draw(self):
         if self.attack_click == 0:
             self.available_sm_draw()
