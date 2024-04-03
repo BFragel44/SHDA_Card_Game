@@ -107,7 +107,6 @@ class RollScreen:
                 # print("re-roll phase")
                 pass
 
-
     def roll_ui_draw(self):
         # 197 x 197 mini screen ((12.31 pyxres blocks tall/wide))
         pyxel.cls(0)
@@ -190,31 +189,105 @@ class GsAttackRoll:
         self.dice = Dice()
         self.dice.roll_result = None
         self.gs_anim_x = 150
-        self.gs_sprite_u = 32
-        self.gs_sprite_h = 32
         self.gs_anim_y = 45
+        self.sm_anim_y = 45
+        self.gs_sprite_u = 32
         self.gs_sprite_v = 64
-        self.gs_hit = False
-        self.hit_values = None
-        self.sound_played = False
+        self.gs_sprite_h = 32
+        self.sm_hit = False
+        self.sm_sprite_v = 64
+        
+    def gs_hit_miss_update(self, swarm_count):
+        # Result >= GS_swarm = miss
+        if self.dice.roll_result >= swarm_count:
+            self.gs_sprite_v = 64
+            self.sm_sprite_v = 128
+            # self.hit_values = [self.facing, self.gs_formation_num, 
+            #                     self.gs_swarm_num]
+        # Else = hit
+        else:
+            self.gs_sprite_v = 96
+            self.sm_anim_y = 50
+            self.sm_sprite_v = 96
+            self.sm_hit = True
 
+# Main Update Method
     def update(self):
         self.dice.dice_update()
         if self.dice.roll_phase == 2:
-            self.hit_miss_update()
+            self.gs_hit_miss_update(self.attack_package['swarm_size'])
         elif self.dice.roll_phase == 3:
             if self.sm_tokens > 0:
                 # print("re-roll phase")
                 pass
 
+    def roll_ui_draw(self):
+        # 197 x 197 mini screen ((12.31 pyxres blocks tall/wide))
+        pyxel.cls(0)
+        pyxel.clip(20, 20, 217, 217)
+        pyxel.rectb(20, 20, 217, 217, 8)
+        # Support Token text:
+        # pyxel.text(60, 80, f"Support Tokens: {self.sm_tokens}", 7)
+        # SM sprite:
+        pyxel.blt(45, self.sm_anim_y, 0, 0, self.sm_sprite_v, 32, 32, 0)
+        # GS sprite:
+        pyxel.blt(self.gs_anim_x, self.gs_anim_y, 0, self.gs_sprite_u, 
+                  self.gs_sprite_v, 64, self.gs_sprite_h, 0)
+
+    def roll_sprites_draw(self):
+        if self.dice.roll_anim_counter < 50:
+            # GS movement
+            self.gs_anim_x -= 1.5
+            # GS claw slashing
+            if self.dice.roll_anim_counter % 5 == 0:
+                self.gs_sprite_v = 128
+            elif self.dice.roll_anim_counter % 9 == 0:
+                self.gs_sprite_v = 160
+            else:
+                self.gs_sprite_v = 64
+
+    def gs_roll_result_sfx(self):
+        pass
+        # placeholder for sfx
+    
+    def post_roll_options(self):
+        # PROCEED OPTION BOX
+        pyxel.rectb(109, 110, 40, 10, 8)
+        pyxel.text(115, 112, "Proceed", 7)
+        # RE-ROLL OPTION BOX
+        if self.sm_tokens > 0 and self.gs_hit == False:
+            pyxel.rectb(109, 125, 40, 10, 8)
+            pyxel.text(114, 127, "Re-roll?", 7)
+            # RE-ROLL BOX CLICKED
+            if box_click(100, 125, 40, 10):
+                print("Re-roll box clicked")
+                self.re_roll()
+                self.dice.roll_phase = 0
+        # PROCEED BOX CLICKED
+        if box_click(100, 110, 40, 10):
+            print("Proceed box clicked")
+            self.dice.roll_phase = 5
+
+# (32, 64) = GS default sprite
+# (32, 128) & (32, 160) = slash sprites
+# (32, 96) = GS HIT sprite
+    
+# (0, 96) = SM HIT sprite
+# (0, 64) = SM default sprite
+# (0, 128) = SM MISS sprite
+
+
+# Main Draw Method
     def draw(self):
         pyxel.cls(0)
+        self.roll_ui_draw()
         self.dice.dice_draw()
+        
         # DICE ROLLING
         if self.dice.roll_phase == 1:
             self.roll_sprites_draw()
         if self.dice.roll_phase == 2:
-            self.roll_result_sfx()
+            self.gs_roll_result_sfx()
         if self.dice.roll_phase == 3:
             self.post_roll_options()
 
@@ -232,6 +305,7 @@ class Dice:
     def dice_roll(self):
         generate_roll = random.randint(0, 6)
         self.roll_result = generate_roll
+        # self.roll_result = 0 # for testing, comment out above and add desired roll
         self.u = self.sm_dice.get(generate_roll)
 
     def dice_update(self):
@@ -245,6 +319,7 @@ class Dice:
                 self.u = self.sm_dice.get(self.roll_anim_counter % 6)
             elif self.roll_anim_counter == 50:
                 self.dice_roll()
+                self.u = 0
             else:
                 self.roll_phase = 2
                 print("dice roll complete")

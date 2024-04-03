@@ -59,7 +59,6 @@ class ResolveGSAttackUI:
         if self.click_phase == 1:
             self.battle_rows_update()
         # if self.click_phase == 2:
-        #     pass
         if self.click_phase == 3:
             self.gs_attack_roll.update()
   
