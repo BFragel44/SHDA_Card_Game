@@ -24,14 +24,25 @@ class ResolveGSAttackUI:
         self.click_phase = 0
         self.attack_queue = None
         self.gs_attack_roll = None
+        self.attacked_swarm_ids = set()
 
     def battle_rows_update(self):
-        if self.attack_queue is None:
-            self.attack_queue = []
-        for marine in self.space_marines.combat_teams:
-            left_swarm = self.location_and_spawns.spawned_left_swarms.get(marine['formation_num'], {}).get('g_stealers', [])
-            right_swarm = self.location_and_spawns.spawned_right_swarms.get(marine['formation_num'], {}).get('g_stealers', [])
+        self.attack_queue = []
+        alive_marines = sorted(
+            [marine for marine in self.space_marines.combat_teams if marine['status'] == 'alive'],
+            key=lambda marine: marine['formation_num']
+        )
+        for marine in alive_marines:
+            left_swarm = self.location_and_spawns.spawned_left_swarms.get(
+                marine['formation_num'], {}
+            ).get('g_stealers', [])
+            right_swarm = self.location_and_spawns.spawned_right_swarms.get(
+                marine['formation_num'], {}
+            ).get('g_stealers', [])
             if len(left_swarm) > 0:
+                left_swarm_id = id(left_swarm)
+                if left_swarm_id in self.attacked_swarm_ids:
+                    continue
                 swarm_dir = 'LEFT'
                 attack = {
                     'swarm': swarm_dir,
@@ -39,9 +50,13 @@ class ResolveGSAttackUI:
                     'facing': marine['facing'],
                     'formation_num': marine['formation_num'],
                     'back_attack': marine['facing'] != swarm_dir,
-                    'sm': marine['sm_name']}
+                    'sm': marine['sm_name'],
+                    'swarm_id': left_swarm_id}
                 self.attack_queue.append(attack)
             if len(right_swarm) > 0:
+                right_swarm_id = id(right_swarm)
+                if right_swarm_id in self.attacked_swarm_ids:
+                    continue
                 swarm_dir = 'RIGHT'
                 attack = {
                     'swarm': swarm_dir,
@@ -49,18 +64,37 @@ class ResolveGSAttackUI:
                     'facing': marine['facing'],
                     'formation_num': marine['formation_num'],
                     'back_attack': marine['facing'] != swarm_dir,
-                    'sm': marine['sm_name']}
+                    'sm': marine['sm_name'],
+                    'swarm_id': right_swarm_id}
 
                 self.attack_queue.append(attack)
-        self.click_phase = 2
+        # If no swarms can attack, immediately end the phase.
+        if not self.attack_queue:
+            self.phase_resolved = True
+            self.click_phase = 4
+        else:
+            self.click_phase = 2
     
     ## Main UPDATE method
     def update(self):
         if self.click_phase == 1:
+            self.attacked_swarm_ids = set()
             self.battle_rows_update()
-        # if self.click_phase == 2:
+        elif self.click_phase == 2:
+            self.battle_rows_update()
+            if not self.attack_queue:
+                self.phase_resolved = True
+                self.click_phase = 4
         if self.click_phase == 3:
             self.gs_attack_roll.update()
+            if self.gs_attack_roll and self.gs_attack_roll.dice.roll_phase == 5:
+                if self.gs_attack_roll.sm_hit:
+                    self.space_marines.apply_casualty_and_shift(
+                        self.gs_attack_roll.attack_package['formation_num'],
+                        self.location_and_spawns,
+                    )
+                self.gs_attack_roll = None
+                self.click_phase = 2
   
     def battle_rows_draw(self):
         gs_left_x = 52
@@ -90,6 +124,7 @@ class ResolveGSAttackUI:
                 self.click_phase = 3
                 if self.attack_queue:
                     current_attack = self.attack_queue.pop(0)
+                    self.attacked_swarm_ids.add(current_attack['swarm_id'])
                     self.gs_attack_roll = ui.GsAttackRoll(current_attack)
 
 

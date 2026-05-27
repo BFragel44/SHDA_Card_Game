@@ -147,6 +147,49 @@ class Location_and_spawns:
             self.loc_terrain_1R,
             self.loc_terrain_2R,]
 
+    def _shift_spawn_dict(self, spawn_dict, dead_formation_num, move_top_half):
+        shifted = {i: {"terrain_color": None, "g_stealers": []} for i in range(6)}
+        for pos, payload in spawn_dict.items():
+            if move_top_half and pos < dead_formation_num:
+                new_pos = pos + 1
+            elif (not move_top_half) and pos > dead_formation_num:
+                new_pos = pos - 1
+            else:
+                new_pos = pos
+            shifted[new_pos] = {
+                "terrain_color": payload["terrain_color"],
+                "g_stealers": payload["g_stealers"],
+            }
+        return shifted
+
+    def _shift_room_terrain(self, dead_formation_num, move_top_half):
+        shifted_terrain = []
+        for terrain in self.room_terrain:
+            terr_name, terr_pos, terr_color = terrain
+            if move_top_half and terr_pos < dead_formation_num:
+                terr_pos += 1
+            elif (not move_top_half) and terr_pos > dead_formation_num:
+                terr_pos -= 1
+            shifted_terrain.append((terr_name, terr_pos, terr_color))
+        self.room_terrain = shifted_terrain
+
+    def shift_formation_positions(self, dead_formation_num, move_top_half):
+        """Shift terrain and swarm positions to match a marine formation shift."""
+        self.spawned_left_swarms = self._shift_spawn_dict(
+            self.spawned_left_swarms, dead_formation_num, move_top_half
+        )
+        self.spawned_right_swarms = self._shift_spawn_dict(
+            self.spawned_right_swarms, dead_formation_num, move_top_half
+        )
+        self._shift_room_terrain(dead_formation_num, move_top_half)
+
+        self.gs_left_formation_num = [
+            key for key, value in self.spawned_left_swarms.items() if value["g_stealers"]
+        ]
+        self.gs_right_formation_num = [
+            key for key, value in self.spawned_right_swarms.items() if value["g_stealers"]
+        ]
+
     ####
     def populate_blips(self):
         # POPULATES LEFT & RIGHT BLIP PILES FROM GS DECK

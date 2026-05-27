@@ -428,6 +428,12 @@ class AttackCard():
         self.available_marines = []
         self.initial_length = None
         self.card_resolved = False
+        self.attacker_choice = None
+        self.no_legal_targets = False
+        self.skip_btn_x = 206
+        self.skip_btn_y = 132
+        self.skip_btn_w = 44
+        self.skip_btn_h = 14
         
 
 ###                            ###
@@ -436,7 +442,8 @@ class AttackCard():
     def available_sm_update(self):
         if not self.available_marines:
             self.available_marines = [marine for marine in self.space_marines.combat_teams 
-                                      if marine['attack_used'] == False and 
+                                      if marine['status'] == 'alive' and
+                                      marine['attack_used'] == False and 
                                       marine['team_color'] == self.card_info]
         
             self.initial_length = len(self.available_marines)
@@ -460,6 +467,7 @@ class AttackCard():
         
 
     def sm_gs_selection_update(self):
+        self.gs_facing_match = []
         gs_side = None
         if self.attacker_choice[1] == 'LEFT':
             gs_side = self.left_gs
@@ -471,6 +479,23 @@ class AttackCard():
                                 len(value['g_stealers'])]
                 if attack_info not in self.gs_facing_match:
                     self.gs_facing_match.append(attack_info)
+
+        self.no_legal_targets = True
+        for gs in self.gs_facing_match:
+            if self.in_range_check_update(gs[1]):
+                self.no_legal_targets = False
+                break
+
+    def skip_selected_attacker(self):
+        for marine in self.space_marines.combat_teams:
+            if marine['formation_num'] == self.attacker_choice[0]:
+                marine['attack_used'] = True
+                break
+
+        self.attacker_choice = None
+        self.gs_facing_match = []
+        self.no_legal_targets = False
+        self.attack_click = 0
 
     def in_range_check_update(self, gs_formation):
         # self.attacker_choice = [marine['formation_num'],
@@ -492,7 +517,7 @@ class AttackCard():
     def available_sm_draw(self):
         for marine in self.space_marines.combat_teams:
 
-            if marine['attack_used'] == False and marine['team_color'] == self.card_info:
+            if marine['status'] == 'alive' and marine['attack_used'] == False and marine['team_color'] == self.card_info:
                 pyxel.rectb(
                 sm.sm_visual_dimms["card_border_x"]-2,
                 sm.sm_visual_dimms["card_border_y"][marine['formation_num']]-2,
@@ -534,7 +559,7 @@ class AttackCard():
                         gs_y = gs[1]
                     elif gs[0] == 'RIGHT':
                         gs_x = gs_right_x
-                        gs_y = 6 - gs[1]
+                        gs_y = gs[1]
                     for n in range(gs[2]):
                         pyxel.rectb(
                             gs_x[n], 
@@ -549,8 +574,36 @@ class AttackCard():
                                                              self.attacker_choice[3],
                                                              gs[1], 
                                                              n)
-        # else:
-        #     print("NO GS FACING MATCH")
+        if self.no_legal_targets:
+            pyxel.text(177, 116, "NO LEGAL", 8)
+            pyxel.text(175, 124, "TARGETS", 8)
+            pyxel.rect(
+                self.skip_btn_x,
+                self.skip_btn_y,
+                self.skip_btn_w,
+                self.skip_btn_h,
+                1,
+            )
+            pyxel.rectb(
+                self.skip_btn_x,
+                self.skip_btn_y,
+                self.skip_btn_w,
+                self.skip_btn_h,
+                7,
+            )
+            pyxel.text(
+                self.skip_btn_x + 12,
+                self.skip_btn_y + 4,
+                "SKIP",
+                7,
+            )
+            if ui.box_click(
+                self.skip_btn_x,
+                self.skip_btn_y,
+                self.skip_btn_w,
+                self.skip_btn_h,
+            ):
+                self.skip_selected_attacker()
 
 
     ###                               ###
@@ -577,6 +630,9 @@ class AttackCard():
                 pyxel.clip()
                 pyxel.cls(0)
                 self.roll_screen = None
+                self.attacker_choice = None
+                self.gs_facing_match = []
+                self.no_legal_targets = False
                 self.attack_click = 0
         # Remove marines from self.available_marines if marine['attack_used'] == True
         self.available_marines = [marine for marine in self.available_marines if not marine['attack_used']]

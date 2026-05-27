@@ -133,11 +133,13 @@ class GenestealerAttackState(GameState):
         super().__init__()
         self.gs_attack_overlay = gsa.ResolveGSAttackUI(space_marines, location_and_spawns)
 
+    def _resolve_phase_transition(self):
+        self.next_state = EventPhaseState()
+
     def update(self, game):
         self.gs_attack_overlay.update()
         if self.gs_attack_overlay.phase_resolved:
-            print("CUE NEXT GAME STATE")
-            # self.next_state = GameBoardState()
+            self._resolve_phase_transition()
 
     def draw(self, game):
         pyxel.cls(0)
@@ -148,6 +150,19 @@ class GenestealerAttackState(GameState):
         self.gs_attack_overlay.overlay_draw()
 
 
+class EventPhaseState(GameState):
+    def __init__(self):
+        super().__init__()
+    
+    def update(self, game):
+        pass
+
+    def draw(self, game):
+        pyxel.cls(0)
+        pyxel.text(100, 8, "Event Phase", 7) 
+        pyxel.text(119, 16, "State", 7)
+
+
 ######################
 ######################
 class App:
@@ -155,8 +170,10 @@ class App:
         pyxel.init(SCREEN_X, SCREEN_Y, title="SPACE HULK: DEATH ANGEL", fps=30)
         pyxel.load("sh_da_gfx.pyxres")
         pyxel.mouse(True)
-        self.state = GenestealerAttackState()
-        # self.state = MainMenuState()
+        # STATE below used for TESTING ATTACK STATE
+        # self.state = GenestealerAttackState()
+        # MainMenuState() = START STATE
+        self.state = MainMenuState()
         pyxel.run(self.update, self.draw)
 
     def update(self):

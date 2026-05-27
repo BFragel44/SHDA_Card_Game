@@ -196,6 +196,7 @@ class GsAttackRoll:
         self.gs_sprite_h = 32
         self.sm_hit = False
         self.sm_sprite_v = 64
+        self.sm_tokens = 0
         
     def gs_hit_miss_update(self, swarm_count):
         # Result >= GS_swarm = miss
@@ -216,6 +217,8 @@ class GsAttackRoll:
         self.dice.dice_update()
         if self.dice.roll_phase == 2:
             self.gs_hit_miss_update(self.attack_package['swarm_size'])
+            # Move to post-roll options once hit/miss visuals are resolved.
+            self.dice.roll_phase = 3
         elif self.dice.roll_phase == 3:
             if self.sm_tokens > 0:
                 # print("re-roll phase")
@@ -254,15 +257,6 @@ class GsAttackRoll:
         # PROCEED OPTION BOX
         pyxel.rectb(109, 110, 40, 10, 8)
         pyxel.text(115, 112, "Proceed", 7)
-        # RE-ROLL OPTION BOX
-        if self.sm_tokens > 0 and self.gs_hit == False:
-            pyxel.rectb(109, 125, 40, 10, 8)
-            pyxel.text(114, 127, "Re-roll?", 7)
-            # RE-ROLL BOX CLICKED
-            if box_click(100, 125, 40, 10):
-                print("Re-roll box clicked")
-                self.re_roll()
-                self.dice.roll_phase = 0
         # PROCEED BOX CLICKED
         if box_click(100, 110, 40, 10):
             print("Proceed box clicked")

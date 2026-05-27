@@ -118,11 +118,43 @@ class Space_marines:
             if marine['formation_num'] == formation_num:
                 marine['facing'] = 'RIGHT' if marine['facing'] == 'LEFT' else 'LEFT'
 
+    def apply_casualty_and_shift(self, dead_formation_num, location_and_spawns):
+        """Remove a marine from formation and shift the smaller half toward the gap."""
+        dead_marine = None
+        for marine in self.combat_teams:
+            if marine['status'] == 'alive' and marine['formation_num'] == dead_formation_num:
+                dead_marine = marine
+                break
+
+        if dead_marine is None:
+            return False
+
+        dead_marine['status'] = 'dead'
+        dead_marine['formation_num'] = -1
+
+        alive_marines = [marine for marine in self.combat_teams if marine['status'] == 'alive']
+        top_half_count = sum(1 for marine in alive_marines if marine['formation_num'] < dead_formation_num)
+        bot_half_count = sum(1 for marine in alive_marines if marine['formation_num'] > dead_formation_num)
+
+        # Tie-break toward top-half movement so behavior is deterministic.
+        move_top_half = top_half_count <= bot_half_count
+
+        for marine in alive_marines:
+            if move_top_half and marine['formation_num'] < dead_formation_num:
+                marine['formation_num'] += 1
+            elif (not move_top_half) and marine['formation_num'] > dead_formation_num:
+                marine['formation_num'] -= 1
+
+        location_and_spawns.shift_formation_positions(dead_formation_num, move_top_half)
+        return True
+
     def formation_draw(self):
         """
         Draws the marine formation on the main game layout
         """
         for roster_dict in self.combat_teams:
+            if roster_dict['status'] != 'alive':
+                continue
             y_val = roster_dict["formation_num"]
             col = roster_dict["team_color"]
             sm_face = roster_dict["visual"]
